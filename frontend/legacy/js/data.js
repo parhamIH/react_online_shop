@@ -1,0 +1,83 @@
+/**
+ * ============================================
+ * DATA MODULE - Mock Data / API Layer
+ * ============================================
+ */
+
+const DataService = {
+    // -------- BANNERS --------
+    banners: [
+        { id:1, title:'Summer Collection 2025', subtitle:'Discover the latest trends', image:'http://static.photos/fashion/1200x630/10', btn:'Shop Now', link:'#/products' },
+        { id:2, title:'Tech Essentials', subtitle:'Premium gadgets & accessories', image:'http://static.photos/technology/1200x630/20', btn:'Explore', link:'#/products' },
+        { id:3, title:'Home & Living', subtitle:'Transform your space', image:'http://static.photos/indoor/1200x630/30', btn:'Discover', link:'#/products' },
+    ],
+
+    // -------- CATEGORIES --------
+    categories: [
+        { id:1, name:'Electronics', icon:'monitor', image:'http://static.photos/technology/640x360/1', productCount:124, color:'bg-blue-50 text-blue-600' },
+        { id:2, name:'Fashion', icon:'shirt', image:'http://static.photos/fashion/640x360/2', productCount:89, color:'bg-pink-50 text-pink-600' },
+        { id:3, name:'Home & Living', icon:'home', image:'http://static.photos/indoor/640x360/3', productCount:67, color:'bg-amber-50 text-amber-600' },
+        { id:4, name:'Sports', icon:'dumbbell', image:'http://static.photos/sport/640x360/4', productCount:45, color:'bg-green-50 text-green-600' },
+        { id:5, name:'Beauty', icon:'sparkles', image:'http://static.photos/cosmetic/640x360/5', productCount:78, color:'bg-purple-50 text-purple-600' },
+        { id:6, name:'Books', icon:'book-open', image:'http://static.photos/education/640x360/6', productCount:156, color:'bg-red-50 text-red-600' },
+    ],
+
+    // -------- BRANDS --------
+    brands: [
+        { id:1, name:'TechVault', logo:'http://static.photos/technology/200x200/11', description:'Premium technology products designed for the modern professional.', image:'http://static.photos/technology/1200x630/12', category:'Electronics', productCount:42, founded:2018 },
+        { id:2, name:'StyleCraft', logo:'http://static.photos/fashion/200x200/13', description:'Contemporary fashion that blends comfort with cutting-edge design.', image:'http://static.photos/fashion/1200x630/14', category:'Fashion', productCount:35, founded:2015 },
+        { id:3, name:'HomeNest', logo:'http://static.photos/indoor/200x200/15', description:'Transform your living space into a sanctuary of style and comfort.', image:'http://static.photos/indoor/1200x630/16', category:'Home & Living', productCount:28, founded:2020 },
+        { id:4, name:'FitPro', logo:'http://static.photos/sport/200x200/17', description:'Professional-grade sports equipment for athletes at every level.', image:'http://static.photos/sport/1200x630/18', category:'Sports', productCount:21, founded:2016 },
+        { id:5, name:'GlowUp', logo:'http://static.photos/cosmetic/200x200/19', description:'Clean beauty products that nourish your skin and the planet.', image:'http://static.photos/cosmetic/1200x630/20', category:'Beauty', productCount:33, founded:2019 },
+    ],
+
+    // -------- PRODUCTS --------
+    products: [
+        { id:1, name:'Wireless Noise-Canceling Headphones', price:299, originalPrice:399, image:'http://static.photos/technology/640x360/21', images:['http://static.photos/technology/640x360/21','http://static.photos/technology/640x360/22','http://static.photos/technology/640x360/23','http://static.photos/technology/640x360/24'], category:'Electronics', brand:'TechVault', brandId:1, rating:4.8, reviews:234, inStock:true, isNew:true, isOffer:true, description:'Experience pure audio bliss with our flagship wireless headphones featuring advanced noise cancellation, 40-hour battery life, and premium comfort for all-day wear.', attributes:{ Color:['Matte Black','Silver','Navy Blue'], Size:['Standard','Compact'] }, videoUrl:'#' },
+        { id:2, name:'Smart Fitness Watch Pro', price:199, originalPrice:279, image:'http://static.photos/technology/640x360/25', images:['http://static.photos/technology/640x360/25','http://static.photos/technology/640x360/26','http://static.photos/technology/640x360/27'], category:'Electronics', brand:'TechVault', brandId:1, rating:4.6, reviews:189, inStock:true, isNew:true, isOffer:true, description:'Track your health and fitness goals with precision GPS, heart rate monitoring, and 100+ workout modes in a sleek, waterproof design.', attributes:{ Color:['Midnight Black','Rose Gold','Arctic White'], Band:['Silicone','Leather','Metal'] }, videoUrl:'#' },
+        { id:3, name:'Premium Leather Crossbody Bag', price:149, originalPrice:null, image:'http://static.photos/fashion/640x360/28', images:['http://static.photos/fashion/640x360/28','http://static.photos/fashion/640x360/29','http://static.photos/fashion/640x360/30'], category:'Fashion', brand:'StyleCraft', brandId:2, rating:4.7, reviews:156, inStock:true, isNew:false, isOffer:false, description:'Handcrafted from genuine Italian leather, this versatile crossbody bag combines timeless elegance with modern functionality.', attributes:{ Color:['Cognac','Black','Burgundy'], Size:['Small','Medium'] }, videoUrl:null },
+        { id:4, name:'Organic Cotton Oversized Tee', price:59, originalPrice:79, image:'http://static.photos/fashion/640x360/31', images:['http://static.photos/fashion/640x360/31','http://static.photos/fashion/640x360/32'], category:'Fashion', brand:'StyleCraft', brandId:2, rating:4.4, reviews:312, inStock:true, isNew:false, isOffer:true, description:'Made from 100% organic cotton, this relaxed-fit tee offers unmatched softness and a conscious choice for your wardrobe.', attributes:{ Color:['White','Sage','Clay','Navy'], Size:['XS','S','M','L','XL'] }, videoUrl:null },
+        { id:5, name:'Minimalist Desk Lamp', price:89, originalPrice:null, image:'http://static.photos/indoor/640x360/33', images:['http://static.photos/indoor/640x360/33','http://static.photos/indoor/640x360/34','http://static.photos/indoor/640x360/35'], category:'Home & Living', brand:'HomeNest', brandId:3, rating:4.9, reviews:87, inStock:true, isNew:true, isOffer:false, description:'Illuminate your workspace with this award-winning desk lamp featuring adjustable color temperature, wireless charging base, and sleek Scandinavian design.', attributes:{ Color:['White','Black','Walnut'], Light:['Warm','Neutral','Cool'] }, videoUrl:'#' },
+        { id:6, name:'Ceramic Plant Pot Set', price:45, originalPrice:65, image:'http://static.photos/indoor/640x360/36', images:['http://static.photos/indoor/640x360/36','http://static.photos/indoor/640x360/37'], category:'Home & Living', brand:'HomeNest', brandId:3, rating:4.5, reviews:64, inStock:true, isNew:false, isOffer:true, description:'Set of 3 hand-painted ceramic plant pots in graduated sizes, perfect for creating a mini indoor garden.', attributes:{ Color:['Terracotta','Sage','Cream'], Set:['3-Piece','5-Piece'] }, videoUrl:null },
+        { id:7, name:'Professional Yoga Mat', price:79, originalPrice:null, image:'http://static.photos/sport/640x360/38', images:['http://static.photos/sport/640x360/38','http://static.photos/sport/640x360/39'], category:'Sports', brand:'FitPro', brandId:4, rating:4.7, reviews:198, inStock:true, isNew:true, isOffer:false, description:'Elevate your practice with our premium non-slip yoga mat featuring alignment markers and superior cushioning.', attributes:{ Color:['Deep Purple','Ocean Blue','Charcoal'], Thickness:['4mm','6mm','8mm'] }, videoUrl:'#' },
+        { id:8, name:'Resistance Band Kit', price:39, originalPrice:55, image:'http://static.photos/sport/640x360/40', images:['http://static.photos/sport/640x360/40','http://static.photos/sport/640x360/41'], category:'Sports', brand:'FitPro', brandId:4, rating:4.3, reviews:267, inStock:true, isNew:false, isOffer:true, description:'Complete set of 5 resistance bands with varying tensions, door anchor, handles, and carry bag for full-body workouts anywhere.', attributes:{ Level:['Beginner','Intermediate','Advanced'] }, videoUrl:null },
+        { id:9, name:'Hydrating Glow Serum', price:68, originalPrice:null, image:'http://static.photos/cosmetic/640x360/42', images:['http://static.photos/cosmetic/640x360/42','http://static.photos/cosmetic/640x360/43'], category:'Beauty', brand:'GlowUp', brandId:5, rating:4.9, reviews:342, inStock:true, isNew:true, isOffer:false, description:'Transform your skin with our bestselling hyaluronic acid serum, enriched with vitamin C and niacinamide for a radiant, dewy complexion.', attributes:{ Size:['30ml','50ml'], Type:['Oily','Dry','Combination'] }, videoUrl:null },
+        { id:10, name:'Natural Lip Butter Set', price:28, originalPrice:38, image:'http://static.photos/cosmetic/640x360/44', images:['http://static.photos/cosmetic/640x360/44','http://static.photos/cosmetic/640x360/45'], category:'Beauty', brand:'GlowUp', brandId:5, rating:4.6, reviews:178, inStock:true, isNew:false, isOffer:true, description:'Set of 4 deeply nourishing lip butters made with organic shea butter, coconut oil, and natural fruit pigments.', attributes:{ Set:['Berry Collection','Neutral Collection'] }, videoUrl:null },
+    ],
+
+    // -------- ARTICLES --------
+    articles: [
+        { id:1, title:'10 Tech Trends Shaping 2025', excerpt:'From AI integration to sustainable tech, discover the innovations that will define the coming year.', image:'http://static.photos/technology/1200x630/50', category:'Technology', author:'Sarah Chen', date:'2025-01-15', readTime:'5 min', content:'<p>The technology landscape is evolving at an unprecedented pace. Here are the key trends that will shape how we live, work, and connect in 2025.</p><h3>1. AI-First Design</h3><p>Artificial intelligence is no longer a feature—it\'s the foundation. Every new product now starts with AI integration at its core, from smart home devices to productivity tools.</p><h3>2. Sustainable Computing</h3><p>As environmental concerns grow, tech companies are prioritizing energy-efficient designs, recyclable materials, and longer product lifespans.</p><h3>3. Spatial Computing</h3><p>The boundaries between digital and physical worlds continue to blur with advances in AR, VR, and mixed reality technologies.</p>', hasVideo:true },
+        { id:2, title:'The Art of Capsule Wardrobes', excerpt:'Build a versatile wardrobe with fewer pieces. Quality over quantity is the new fashion mantra.', image:'http://static.photos/fashion/1200x630/51', category:'Fashion', author:'Maya Johnson', date:'2025-01-12', readTime:'7 min', content:'<p>A capsule wardrobe isn\'t just about minimalism—it\'s about intentionality. Here\'s how to curate a collection that works harder for you.</p><h3>Start With Neutral Basics</h3><p>Invest in high-quality pieces in neutral tones that can be mixed and matched effortlessly.</p><h3>Add Statement Pieces</h3><p>Choose 3-5 statement items that reflect your personality and can elevate any outfit.</p>', hasVideo:false },
+        { id:3, title:'Creating Calm: Home Design Tips', excerpt:'Transform your home into a peaceful retreat with these simple yet impactful design strategies.', image:'http://static.photos/indoor/1200x630/52', category:'Home & Living', author:'Alex Rivera', date:'2025-01-10', readTime:'6 min', content:'<p>Your home should be your sanctuary. Here are expert tips for creating a space that promotes calm and well-being.</p><h3>Embrace Natural Light</h3><p>Maximize natural light by using sheer curtains and strategically placing mirrors to reflect sunlight throughout your rooms.</p><h3>Choose a Calming Palette</h3><p>Soft neutrals, muted greens, and gentle blues create a soothing atmosphere.</p>', hasVideo:true },
+        { id:4, title:'Fitness Myths Debunked', excerpt:'Separate fact from fiction when it comes to common fitness misconceptions that might be holding you back.', image:'http://static.photos/sport/1200x630/53', category:'Sports', author:'Dr. James Park', date:'2025-01-08', readTime:'8 min', content:'<p>Let\'s tackle some of the most persistent fitness myths that might be sabotaging your progress.</p><h3>Myth: No Pain, No Gain</h3><p>While challenging workouts are important, pain is not a reliable indicator of progress. Discomfort yes, pain no.</p><h3>Myth: Cardio is King for Weight Loss</h3><p>Strength training is equally important for fat loss and metabolic health.</p>', hasVideo:false },
+        { id:5, title:'Clean Beauty Revolution', excerpt:'Why consumers are demanding transparency and sustainability in their beauty products more than ever.', image:'http://static.photos/cosmetic/1200x630/54', category:'Beauty', author:'Emma Wilson', date:'2025-01-05', readTime:'5 min', content:'<p>The clean beauty movement is reshaping the cosmetics industry from the inside out.</p><h3>What Does "Clean" Really Mean?</h3><p>Clean beauty goes beyond just ingredients—it encompasses ethical sourcing, sustainable packaging, and transparent practices.</p>', hasVideo:true },
+    ],
+
+    // -------- VIDEOS --------
+    videos: [
+        { id:1, title:'Product Unboxing: Wireless Headphones', thumbnail:'http://static.photos/technology/640x360/60', duration:'4:23', category:'Electronics' },
+        { id:2, title:'Home Makeover Time-lapse', thumbnail:'http://static.photos/indoor/640x360/61', duration:'8:15', category:'Home & Living' },
+        { id:3, title:'Morning Skincare Routine', thumbnail:'http://static.photos/cosmetic/640x360/62', duration:'6:42', category:'Beauty' },
+        { id:4, title:'Yoga Flow for Beginners', thumbnail:'http://static.photos/sport/640x360/63', duration:'12:30', category:'Sports' },
+    ],
+
+    // -------- HELPER METHODS --------
+    getProductsByCategory(cat) { return this.products.filter(p => p.category === cat); },
+    getProductsByBrand(brandId) { return this.products.filter(p => p.brandId === brandId); },
+    getOffers() { return this.products.filter(p => p.isOffer); },
+    getNewArrivals() { return this.products.filter(p => p.isNew); },
+    getRelatedProducts(productId) {
+        const product = this.products.find(p => p.id === productId);
+        if (!product) return [];
+        return this.products.filter(p => p.id !== productId && p.category === product.category).slice(0,4);
+    },
+    getProduct(id) { return this.products.find(p => p.id === parseInt(id)); },
+    getArticle(id) { return this.articles.find(a => a.id === parseInt(id)); },
+    getBrand(id) { return this.brands.find(b => b.id === parseInt(id)); },
+    getCategory(id) { return this.categories.find(c => c.id === parseInt(id)); },
+    searchProducts(query) {
+        const q = query.toLowerCase();
+        return this.products.filter(p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q));
+    }
+};

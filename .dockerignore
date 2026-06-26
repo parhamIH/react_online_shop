@@ -1,0 +1,15 @@
+**/.git
+**/.venv
+**/venv
+**/__pycache__
+**/*.pyc
+**/node_modules
+**/dist
+**/.env
+**/db.sqlite3
+**/uploads
+**/staticfiles
+**/.pytest_cache
+**/.coverage
+**/Thumbs.db
+**/.DS_Store

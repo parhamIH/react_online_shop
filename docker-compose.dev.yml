@@ -1,0 +1,84 @@
+# Development stack with hot-reload
+# Usage: cp .env.example .env && docker compose -f docker-compose.dev.yml up --build
+
+name: react-shop-dev
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: react-shop-dev-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-react_shop}
+      POSTGRES_USER: ${POSTGRES_USER:-react_shop}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-react_shop_secret}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - react-shop-dev-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-react_shop}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: react-shop-dev-backend
+    env_file:
+      - .env
+    environment:
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${POSTGRES_DB:-react_shop}
+      DB_USER: ${POSTGRES_USER:-react_shop}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-react_shop_secret}
+      DB_HOST: db
+      DB_PORT: "5432"
+      DEBUG: "True"
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,backend,0.0.0.0}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+    volumes:
+      - ./backend:/app
+      - backend_venv:/app/.venv
+      - media_dev_data:/app/uploads
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - react-shop-dev-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: react-shop-dev-frontend
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+      VITE_USE_API: ${VITE_USE_API:-true}
+      VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
+      VITE_API_PROXY_TARGET: http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    depends_on:
+      - backend
+    networks:
+      - react-shop-dev-net
+
+networks:
+  react-shop-dev-net:
+    driver: bridge
+    name: react-shop-dev-net
+
+volumes:
+  postgres_dev_data:
+  media_dev_data:
+  backend_venv:
+  frontend_node_modules:
