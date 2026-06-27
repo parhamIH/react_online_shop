@@ -5,6 +5,7 @@ import random
 from faker import Faker
 from django.utils.text import slugify
 from decimal import Decimal
+from django.db.models.signals import post_save
 
 # Configure Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
@@ -23,6 +24,7 @@ from shop.cart.models import Cart, CartItem
 from shop.order.models import Order
 from shop.sitesettings.models import SiteSettings, StaticPage
 from shop.support.models import SupportTicket, TicketReply
+from shop.providers.signals import set_user_as_staff, assign_provider_permissions
 
 fake = Faker('fa_IR')  # Using Persian locale
 fake_en = Faker('en_US')
@@ -197,9 +199,12 @@ def create_sizes():
     return sizes
 
 def create_providers(users):
+    # Disconnect signals temporarily
+    post_save.disconnect(set_user_as_staff, sender=Provider)
+    post_save.disconnect(assign_provider_permissions, sender=Provider)
+    
     providers = []
     provider_types = ['individual', 'company']
-    statuses = ['pending', 'active', 'suspended', 'rejected']
     for i in range(min(3, len(users))):
         user = users[i]
         provider, _ = Provider.objects.get_or_create(
@@ -217,6 +222,11 @@ def create_providers(users):
             }
         )
         providers.append(provider)
+    
+    # Reconnect signals
+    post_save.connect(set_user_as_staff, sender=Provider)
+    post_save.connect(assign_provider_permissions, sender=Provider)
+    
     return providers
 
 def create_products(categories, providers, brands):
@@ -296,17 +306,20 @@ def create_cart_and_orders(users, product_packages):
         if cart.is_paid:
             address = ClientAddress.objects.filter(user=user).first()
             if address:
-                Order.objects.create(
-                    user=user,
-                    cart=cart,
-                    address=address,
-                    payment_method='online',
-                    payment_status='پرداخت شده',
-                    status='تأیید شده',
-                    shipping_method=random.choice(['post', 'tipax', 'express']),
-                    shipping_cost=random.randint(10000, 50000),
-                    total_price=cart.total_price()
-                )
+                # Check if order already exists from signal
+                existing_order = Order.objects.filter(cart=cart).first()
+                if not existing_order:
+                    Order.objects.create(
+                        user=user,
+                        cart=cart,
+                        address=address,
+                        payment_method='online',
+                        payment_status='پرداخت شده',
+                        status='تأیید شده',
+                        shipping_method=random.choice(['post', 'tipax', 'express']),
+                        shipping_cost=random.randint(10000, 50000),
+                        total_price=cart.total_price()
+                    )
 
 def create_notifications(users):
     types = ['info', 'success', 'warning', 'danger']
@@ -324,6 +337,35 @@ def create_favorites(users, products):
     for user in users:
         fav, _ = FavouriteProducts.objects.get_or_create(user=user)
         fav.products.add(*random.sample(products, k=min(5, len(products))))
+
+def create_home_content(brands):
+    for i in range(3):
+        HomeSlider.objects.get_or_create(
+            title=fake.sentence(nb_words=3),
+            defaults={
+                'subtitle': fake.sentence(nb_words=6),
+                'active': True,
+                'order': i
+            }
+        )
+    for i in range(2):
+        PromotionalBanner.objects.get_or_create(
+            title=fake.sentence(nb_words=2),
+            defaults={
+                'active': True,
+                'position': random.choice(['top', 'middle', 'bottom']),
+                'size': random.choice(['full', 'half', 'third']),
+                'order': i
+            }
+        )
+    for i, brand in enumerate(brands[:5]):
+        FeaturedBrand.objects.get_or_create(
+            brand=brand,
+            defaults={
+                'active': True,
+                'order': i
+            }
+        )
 
 def create_site_settings():
     SiteSettings.objects.get_or_create(
@@ -358,8 +400,40 @@ def create_static_pages():
 
 def main():
     print("Starting seed...")
+    print("Clearing existing data...")
     
-    # Create basic data
+    # Clear all existing data in reverse order of dependencies
+    TicketReply.objects.all().delete()
+    SupportTicket.objects.all().delete()
+    StaticPage.objects.all().delete()
+    SiteSettings.objects.all().delete()
+    Order.objects.all().delete()
+    CartItem.objects.all().delete()
+    Cart.objects.all().delete()
+    FeaturedBrand.objects.all().delete()
+    PromotionalBanner.objects.all().delete()
+    HomeSlider.objects.all().delete()
+    Comment.objects.all().delete()
+    Gallery.objects.all().delete()
+    ProductPackage.objects.all().delete()
+    Product.objects.all().delete()
+    ProviderMember.objects.all().delete()
+    Provider.objects.all().delete()
+    Size.objects.all().delete()
+    Color.objects.all().delete()
+    BaseColor.objects.all().delete()
+    Warranty.objects.all().delete()
+    Brand.objects.all().delete()
+    Category.objects.all().delete()
+    BaseCategories.objects.all().delete()
+    Article.objects.all().delete()
+    UserCoupon.objects.all().delete()
+    FavouriteProducts.objects.all().delete()
+    Notification.objects.all().delete()
+    ClientAddress.objects.all().delete()
+    Profile.objects.all().delete()
+    User.objects.all().delete()
+    
     print("Creating users...")
     users = create_users()
     
@@ -377,6 +451,9 @@ def main():
     
     print("Creating brands...")
     brands = create_brands(categories)
+
+    print("Creating home content...")
+    create_home_content(brands)
     
     print("Creating warranties...")
     warranties = create_warranties()

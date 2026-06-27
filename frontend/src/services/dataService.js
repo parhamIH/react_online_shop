@@ -3,62 +3,87 @@ import { DataService as mockData } from '../data/data';
 
 const useApi = import.meta.env.VITE_USE_API === 'true';
 
-function mapHomeData(home) {
-  const banners = (home.banners || []).map((b) => ({
-    id: b.id,
-    title: b.title,
-    subtitle: b.subtitle,
-    image: b.image,
+function mapHomeData(home = {}) {
+  const safeHome = home || {};
+  
+  const banners = (safeHome.banners || []).filter(Boolean).map((b) => ({
+    id: b?.id || Math.random(),
+    title: b?.title || '',
+    subtitle: b?.subtitle || '',
+    image: b?.image || '',
     btn: 'Shop Now',
-    link: b.link || '/products',
+    link: b?.link || '/products',
   }));
 
-  const brands = (home.featuredBrands || []).map((fb) => fb.brand).filter(Boolean);
+  const brands = (safeHome.featuredBrands || []).filter(Boolean).map((fb) => fb?.brand).filter(Boolean);
 
-  return { banners, brands, promotionalBanners: home.promotionalBanners || [] };
+  return {
+    banners,
+    brands,
+    promotionalBanners: safeHome.promotionalBanners || []
+  };
 }
 
-function mapCategories(categories) {
-  return categories.map((c) => ({
-    id: c.id,
-    name: c.en_name || c.name,
+function mapCategories(categories = []) {
+  return (categories || []).map((c) => ({
+    id: c?.id,
+    name: c?.en_name || c?.name,
     icon: 'tag',
-    image: c.image,
-    productCount: c.productCount,
+    image: c?.image,
+    productCount: c?.productCount,
     color: 'bg-blue-50 text-blue-600',
   }));
 }
 
 const apiService = {
-  getVideos: () => Promise.resolve(mockData.videos),
+  getVideos: () => Promise.resolve(mockData.videos || []),
 
-  getHome: async () => mapHomeData(await shopApi.getHome()),
+  getHome: async () => {
+    try {
+      const res = await shopApi.getHome();
+      return mapHomeData(res || {});
+    } catch (err) {
+      return mapHomeData({});
+    }
+  },
 
-  getCategories: async () => mapCategories(await shopApi.getCategories()),
+  getCategories: async () => {
+    try {
+      return mapCategories(await shopApi.getCategories());
+    } catch (err) {
+      return mapCategories([]);
+    }
+  },
 
-  getBrands: () => shopApi.getBrands(),
+  getBrands: async () => {
+    try {
+      return await shopApi.getBrands();
+    } catch (err) {
+      return [];
+    }
+  },
 
-  getBrand: (id) => shopApi.getBrand(id),
+  getBrand: (id) => shopApi.getBrand(id).catch(() => null),
 
-  getProducts: (params = {}) => shopApi.getProducts(params),
+  getProducts: (params = {}) => shopApi.getProducts(params).catch(() => []),
 
-  getProduct: (id) => shopApi.getProduct(id),
+  getProduct: (id) => shopApi.getProduct(id).catch(() => null),
 
-  getOffers: () => shopApi.getOffers(),
+  getOffers: () => shopApi.getOffers().catch(() => []),
 
-  getNewArrivals: () => shopApi.getNewArrivals(),
+  getNewArrivals: () => shopApi.getNewArrivals().catch(() => []),
 
-  getRelatedProducts: (productId) => shopApi.getRelatedProducts(productId),
+  getRelatedProducts: (productId) => shopApi.getRelatedProducts(productId).catch(() => []),
 
-  getArticles: () => shopApi.getArticles(),
+  getArticles: () => shopApi.getArticles().catch(() => []),
 
-  getArticle: (id) => shopApi.getArticle(id),
+  getArticle: (id) => shopApi.getArticle(id).catch(() => null),
 
-  searchProducts: (query) => shopApi.searchProducts(query),
+  searchProducts: (query) => shopApi.searchProducts(query).catch(() => []),
 
-  getProductsByCategory: (cat) => shopApi.getProducts({ category: cat }),
+  getProductsByCategory: (cat) => shopApi.getProducts({ category: cat }).catch(() => []),
 
-  getProductsByBrand: (brandId) => shopApi.getProducts({ brand: brandId }),
+  getProductsByBrand: (brandId) => shopApi.getProducts({ brand: brandId }).catch(() => []),
 };
 
 const mockService = {

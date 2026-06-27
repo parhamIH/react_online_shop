@@ -2,26 +2,34 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSlider } from '../hooks/useSlider';
 
-export default function HomeBannerSlider({ banners }) {
+export default function HomeBannerSlider({ banners = [] }) {
   const { current, goTo, next, prev } = useSlider({
     total: banners.length,
     autoplay: true,
     interval: 5000,
   });
 
+  if (!banners.length) {
+    return null; // Or a placeholder
+  }
+
   return (
     <section className="slider-container rounded-2xl overflow-hidden relative group">
       <div className="slider-track" style={{ transform: `translateX(-${current * 100}%)` }}>
         {banners.map((b) => (
-          <div key={b.id} className="banner-slide relative h-[300px] sm:h-[400px] md:h-[500px]">
-            <img src={b.image} alt={b.title} className="w-full h-full object-cover" />
+          <div key={b?.id || Math.random()} className="banner-slide relative h-[300px] sm:h-[400px] md:h-[500px]">
+            <img 
+              src={b?.image || 'https://via.placeholder.com/1920x800?text=Banner'} 
+              alt={b?.title || 'Banner'} 
+              className="w-full h-full object-cover" 
+            />
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
             <div className="absolute inset-0 flex items-center px-8 md:px-16">
               <div className="max-w-lg text-white">
-                <h1 className="hero-title text-3xl md:text-5xl font-bold mb-3 leading-tight">{b.title}</h1>
-                <p className="hero-subtitle text-lg md:text-xl text-white/80 mb-6">{b.subtitle}</p>
-                <Link to={b.link} className="inline-flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold transition-all hover:gap-3">
-                  {b.btn} <ArrowRight className="w-4 h-4" />
+                <h1 className="hero-title text-3xl md:text-5xl font-bold mb-3 leading-tight">{b?.title || 'Welcome'}</h1>
+                <p className="hero-subtitle text-lg md:text-xl text-white/80 mb-6">{b?.subtitle || 'Discover amazing products'}</p>
+                <Link to={b?.link || '/products'} className="inline-flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold transition-all hover:gap-3">
+                  {b?.btn || 'Shop Now'} <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>

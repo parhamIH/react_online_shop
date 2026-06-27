@@ -12,23 +12,23 @@ import { useAsyncData } from '../hooks/useAsyncData';
 import { DataService } from '../services/dataService';
 
 export default function HomePage() {
-  const { data: home, loading: homeLoading } = useAsyncData(() => DataService.getHome(), []);
-  const { data: offers = [] } = useAsyncData(() => DataService.getOffers(), []);
-  const { data: newArrivals = [] } = useAsyncData(() => DataService.getNewArrivals(), []);
-  const { data: articles = [] } = useAsyncData(() => DataService.getArticles(), []);
-  const { data: categories = [] } = useAsyncData(() => DataService.getCategories(), []);
-  const { data: brands = [] } = useAsyncData(() => DataService.getBrands(), []);
-  const { data: videos = [] } = useAsyncData(() => DataService.getVideos(), []);
+  const { data: home, loading: homeLoading } = useAsyncData(() => DataService.getHome(), [], { banners: [], brands: [], promotionalBanners: [] });
+  const { data: offers = [] } = useAsyncData(() => DataService.getOffers(), [], []);
+  const { data: newArrivals = [] } = useAsyncData(() => DataService.getNewArrivals(), [], []);
+  const { data: articles = [] } = useAsyncData(() => DataService.getArticles(), [], []);
+  const { data: categories = [] } = useAsyncData(() => DataService.getCategories(), [], []);
+  const { data: brands = [] } = useAsyncData(() => DataService.getBrands(), [], []);
+  const { data: videos = [] } = useAsyncData(() => DataService.getVideos(), [], []);
 
-  if (homeLoading || !home) {
+  if (homeLoading) {
     return <div className="max-w-7xl mx-auto px-4 py-20 text-center text-gray-500">Loading...</div>;
   }
 
-  const displayBrands = home.brands?.length ? home.brands : brands;
+  const displayBrands = home?.brands?.length ? home.brands : brands;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-12">
-      <HomeBannerSlider banners={home.banners} />
+      <HomeBannerSlider banners={home?.banners || []} />
       <CategorySlider categories={categories} />
       <OfferSlider products={offers} />
 
@@ -43,7 +43,7 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {newArrivals.map((p) => <ProductCard key={p.id} product={p} />)}
+          {newArrivals.map((p) => <ProductCard key={p?.id || Math.random()} product={p} />)}
         </div>
       </section>
 
@@ -61,7 +61,7 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {articles.slice(0, 4).map((a) => <ArticleCard key={a.id} article={a} />)}
+          {articles.slice(0, 4).map((a) => <ArticleCard key={a?.id || Math.random()} article={a} />)}
         </div>
       </section>
 
@@ -73,7 +73,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {videos.slice(0, 4).map((v) => <VideoCard key={v.id} video={v} />)}
+          {videos.slice(0, 4).map((v) => <VideoCard key={v?.id || Math.random()} video={v} />)}
         </div>
       </section>
     </div>

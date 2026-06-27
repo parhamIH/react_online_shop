@@ -26,15 +26,21 @@ class Cart(models.Model):
     def save(self, *args, **kwargs):
         if not self.cart_number:
             self.cart_number = str(uuid.uuid4())
+        
+        # Save first if it's a new instance so we have a pk
+        is_new = self.pk is None
+        if is_new:
+            super(Cart, self).save(*args, **kwargs)
 
         # وقتی پرداخت شد، تمام آیتم‌ها قیمتشان را فیکس کنند
-        if self.is_paid:
+        if self.is_paid and self.pk:
             for item in self.cartitem_set.all():
-                if item.final_price is None or item.final_price > item.price :
+                if item.final_price is None:
                     item.final_price = item.package.price
                     item.save()
 
-        super(Cart, self).save(*args, **kwargs)
+        if not is_new:
+            super(Cart, self).save(*args, **kwargs)
 
     def total_price(self):
         """ جمع قیمت تمامی آیتم‌ها از فیلد ذخیره‌شده `final_price` """

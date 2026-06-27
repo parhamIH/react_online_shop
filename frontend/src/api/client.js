@@ -50,7 +50,8 @@ export async function apiRequest(path, options = {}) {
 }
 
 export function unwrapPaginated(data) {
+  if (!data) return [];
   if (Array.isArray(data)) return data;
   if (data?.results) return data.results;
-  return data;
+  return [];
 }

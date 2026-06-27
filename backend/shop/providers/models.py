@@ -70,6 +70,7 @@ class Provider(models.Model):
         ordering = ["-created_at"]
         permissions = [
             ("verify_provider", "Can verify provider"),
+            ("manage_provider", "Can manage provider"),
         ]
     def __str__(self):
         return self.company_name

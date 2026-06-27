@@ -3,13 +3,17 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCard from './ProductCard';
 import { useSlider } from '../hooks/useSlider';
 
-export default function OfferSlider({ products }) {
+export default function OfferSlider({ products = [] }) {
   const { current, next, prev } = useSlider({
     total: products.length,
     autoplay: true,
     interval: 4000,
     infinite: true,
   });
+
+  if (!products.length) {
+    return null;
+  }
 
   return (
     <section data-animate className="mb-12">
@@ -30,7 +34,7 @@ export default function OfferSlider({ products }) {
       <div className="slider-container overflow-hidden">
         <div className="slider-track" style={{ transform: `translateX(-${current * (100 / Math.min(products.length, 3))}%)` }}>
           {products.map((p, i) => (
-            <div key={p.id} className={`w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 px-2 stagger-${i + 1}`}>
+            <div key={p?.id || Math.random()} className={`w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 px-2 stagger-${i + 1}`}>
               <ProductCard product={p} />
             </div>
           ))}
