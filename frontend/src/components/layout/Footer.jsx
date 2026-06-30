@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom';
 import { Mail, MapPin, Phone } from 'lucide-react';
-import { DataService } from '../../data/data';
+import { useAsyncData } from '../../hooks/useAsyncData';
+import { DataService } from '../../services/dataService';
 import DynamicIcon from '../DynamicIcon';
 
 const socials = ['facebook', 'twitter', 'instagram', 'youtube'];
 
 export default function Footer() {
+  const { data: categories = [] } = useAsyncData(() => DataService.getCategories(), [], []);
   return (
     <footer className="bg-gray-900 text-white mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -37,9 +39,9 @@ export default function Footer() {
           <div>
             <h3 className="font-bold mb-4">Categories</h3>
             <ul className="space-y-2 text-gray-400 text-sm">
-              {DataService.categories.map((c) => (
-                <li key={c.id}>
-                  <Link to={`/products?category=${encodeURIComponent(c.name)}`} className="hover:text-primary-400 transition">{c.name}</Link>
+              {(Array.isArray(categories) ? categories : []).map((c) => (
+                <li key={c?.id || Math.random()}>
+                  <Link to={`/products?category=${encodeURIComponent(c?.name || '')}`} className="hover:text-primary-400 transition">{c?.name || 'Category'}</Link>
                 </li>
               ))}
             </ul>

@@ -4,7 +4,8 @@ import { Heart, Minus, Play, Plus, RefreshCw, ShieldCheck, ShoppingCart, Star, T
 import { useCart } from '../context/CartContext';
 
 function ProductDetailGallery({ product }) {
-  const [activeImage, setActiveImage] = useState(product.images[0]);
+  const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : [product.image || 'https://via.placeholder.com/600x400'];
+  const [activeImage, setActiveImage] = useState(images[0]);
 
   return (
     <div className="animate-slide-left">
@@ -17,7 +18,7 @@ function ProductDetailGallery({ product }) {
         )}
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2">
-        {product.images.map((img) => (
+        {(Array.isArray(images) ? images : []).map((img) => (
           <button
             key={img}
             type="button"
@@ -37,11 +38,11 @@ function ProductAttribute({ attributes, selected, onSelect }) {
 
   return (
     <div className="space-y-4">
-      {Object.entries(attributes).map(([key, values]) => (
+      {Object.entries(attributes || {}).map(([key, values]) => (
         <div key={key}>
           <h4 className="font-semibold text-sm text-gray-700 mb-2">{key}</h4>
           <div className="flex flex-wrap gap-2">
-            {values.map((value) => (
+            {(Array.isArray(values) ? values : []).map((value) => (
               <button
                 key={value}
                 type="button"
@@ -64,7 +65,7 @@ export default function ProductDetail({ product }) {
   const [selectedAttrs, setSelectedAttrs] = useState(() => {
     if (!product.attributes) return {};
     return Object.fromEntries(
-      Object.entries(product.attributes).map(([key, values]) => [key, values[0]]),
+      Object.entries(product.attributes || {}).map(([key, values]) => [key, values[0]]),
     );
   });
 

@@ -9,8 +9,8 @@ export default function CategoryBrand({ categories = [], brands = [] }) {
         <p className="text-gray-500 mt-2">Explore brands organized by their specialty</p>
       </div>
       <div className="space-y-8">
-        {categories.slice(0, 4).map((cat) => {
-          const catBrands = brands.filter((b) => b?.category === cat?.name);
+        {(Array.isArray(categories) ? categories : []).slice(0, 4).map((cat) => {
+          const catBrands = (Array.isArray(brands) ? brands : []).filter((b) => b?.category === cat?.name);
           if (catBrands.length === 0) return null;
           return (
             <div key={cat?.id || Math.random()} className="bg-white rounded-xl border border-gray-100 p-6">

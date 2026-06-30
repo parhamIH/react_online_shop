@@ -6,8 +6,8 @@ import { useAsyncData } from '../hooks/useAsyncData';
 import { DataService } from '../services/dataService';
 
 export default function BrandsPage() {
-  const { data: brands = [], loading: brandsLoading } = useAsyncData(() => DataService.getBrands(), []);
-  const { data: categories = [], loading: categoriesLoading } = useAsyncData(() => DataService.getCategories(), []);
+  const { data: brands = [], loading: brandsLoading } = useAsyncData(() => DataService.getBrands(), [], []);
+  const { data: categories = [], loading: categoriesLoading } = useAsyncData(() => DataService.getCategories(), [], []);
 
   if (brandsLoading || categoriesLoading) {
     return <div className="text-center py-20 text-gray-500">Loading brands...</div>;

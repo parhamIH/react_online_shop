@@ -26,13 +26,13 @@ export default function CartSidebar() {
               <p className="text-sm mt-1">Add some products to get started</p>
             </div>
           ) : (
-            items.map((item) => (
+            (Array.isArray(items) ? items : []).map((item) => (
               <div key={item.key} className="flex gap-4 p-4 bg-gray-50 rounded-xl mb-3 animate-fade-in">
-                <img src={item.product.image} alt={item.product.name} className="w-20 h-20 object-cover rounded-lg" />
+                <img src={item?.product?.image || 'https://via.placeholder.com/80x80?text=Product'} alt={item?.product?.name || 'Product'} className="w-20 h-20 object-cover rounded-lg" />
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm truncate">{item.product.name}</h4>
+                  <h4 className="font-medium text-sm truncate">{item?.product?.name || 'Product'}</h4>
                   <p className="text-xs text-gray-500 mt-1">
-                    {Object.entries(item.attrs).map(([k, v]) => `${k}: ${v}`).join(' · ')}
+                    {Object.entries(item?.attrs || {}).map(([k, v]) => `${k}: ${v}`).join(' · ')}
                   </p>
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center gap-2">
@@ -40,7 +40,7 @@ export default function CartSidebar() {
                       <span className="text-sm font-medium w-6 text-center">{item.qty}</span>
                       <button type="button" onClick={() => updateQty(item.key, item.qty + 1)} className="qty-btn w-7 h-7 rounded-lg border flex items-center justify-center text-sm">+</button>
                     </div>
-                    <span className="font-semibold text-primary-600">${(item.product.price * item.qty).toFixed(2)}</span>
+                    <span className="font-semibold text-primary-600">${(item?.product?.price * item.qty || 0).toFixed(2)}</span>
                   </div>
                 </div>
                 <button type="button" onClick={() => remove(item.key)} className="text-gray-400 hover:text-red-500 transition p-1">

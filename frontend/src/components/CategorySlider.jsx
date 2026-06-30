@@ -11,11 +11,11 @@ export default function CategorySlider({ categories = [] }) {
         </div>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {categories.map((c, i) => (
+        {(Array.isArray(categories) ? categories : []).map((c, i) => (
           <Link
             key={c?.id || Math.random()}
             to={`/products?category=${encodeURIComponent(c?.name || '')}`}
-            className={`card-hover flex flex-col items-center gap-3 p-5 bg-white rounded-xl border border-gray-100 hover:border-primary-200 hover:shadow-lg transition-all stagger-${i + 1} group`}
+            className={`card-hover flex flex-col items-center gap-3 p-5 bg-white rounded-xl border border-gray-100 hover:border-primary-200 hover:shadow-md transition-all stagger-${i + 1} group`}
           >
             <div className={`w-14 h-14 ${c?.color || 'bg-blue-50 text-blue-600'} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
               <DynamicIcon name={c?.icon || 'tag'} className="w-7 h-7" />

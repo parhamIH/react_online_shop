@@ -14,28 +14,28 @@ export default function CommentsPage() {
         <div className="text-center py-12 text-gray-500">نظری یافت نشد</div>
       ) : (
         <div className="space-y-6">
-          {comments.map((comment) => (
-            <div key={comment.id} className="bg-white rounded-lg shadow p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <Link to={`/products/${comment.product}`} className="text-lg font-semibold text-blue-600 hover:text-blue-700">
-                    {comment.productName}
-                  </Link>
-                  <p className="text-gray-500 text-sm mt-1">{new Date(comment.created_at).toLocaleDateString('fa-IR')}</p>
+            {(Array.isArray(comments) ? comments : []).map((comment) => (
+              <div key={comment?.id || Math.random()} className="bg-white rounded-lg shadow p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <Link to={`/products/${comment?.product || ''}`} className="text-lg font-semibold text-blue-600 hover:text-blue-700">
+                      {comment?.productName || 'محصول'}
+                    </Link>
+                    <p className="text-gray-500 text-sm mt-1">{comment?.created_at ? new Date(comment.created_at).toLocaleDateString('fa-IR') : ''}</p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <span key={i} className={i < (comment?.rating || 0) ? 'text-yellow-400' : 'text-gray-300'}>★</span>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className={i < comment.rating ? 'text-yellow-400' : 'text-gray-300'}>★</span>
-                  ))}
-                </div>
+                <p className="text-gray-700">{comment?.text || ''}</p>
+                <p className={`text-sm mt-2 ${comment?.is_approved ? 'text-green-600' : 'text-yellow-600'}`}>
+                  {comment?.is_approved ? 'تایید شده' : 'در انتظار تایید'}
+                </p>
               </div>
-              <p className="text-gray-700">{comment.text}</p>
-              <p className={`text-sm mt-2 ${comment.is_approved ? 'text-green-600' : 'text-yellow-600'}`}>
-                {comment.is_approved ? 'تایید شده' : 'در انتظار تایید'}
-              </p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
       )}
     </div>
   );

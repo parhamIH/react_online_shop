@@ -54,12 +54,12 @@ export default function SearchBar() {
           {results.length === 0 ? (
             <div className="p-4 text-center text-gray-400 text-sm">No results found</div>
           ) : (
-            results.map((p) => (
-              <Link key={p.id} to={`/products/${p.id}`} className="flex items-center gap-3 p-3 hover:bg-gray-50 transition">
-                <img src={p.image} alt={p.name} className="w-12 h-12 rounded-lg object-cover" />
+            (Array.isArray(results) ? results : []).map((p) => (
+              <Link key={p?.id || Math.random()} to={`/products/${p?.id || ''}`} className="flex items-center gap-3 p-3 hover:bg-gray-50 transition">
+                <img src={p?.image || 'https://via.placeholder.com/48x48?text=Product'} alt={p?.name || 'Product'} className="w-12 h-12 rounded-lg object-cover" />
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{p.name}</p>
-                  <p className="text-xs text-gray-400">{p.brand} · ${p.price}</p>
+                  <p className="font-medium text-sm truncate">{p?.name || 'Product'}</p>
+                  <p className="text-xs text-gray-400">{p?.brand || ''} · ${p?.price || 0}</p>
                 </div>
               </Link>
             ))

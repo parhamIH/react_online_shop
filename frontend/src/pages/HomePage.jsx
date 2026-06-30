@@ -73,8 +73,8 @@ export default function HomePage() {
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {videos.slice(0, 4).map((v) => <VideoCard key={v?.id || Math.random()} video={v} />)}
-        </div>
+              {(Array.isArray(videos) ? videos : []).slice(0, 4).map((v) => <VideoCard key={v?.id || Math.random()} video={v} />)}
+            </div>
       </section>
     </div>
   );

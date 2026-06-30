@@ -13,24 +13,24 @@ export default function NotificationsPage() {
         <div className="text-center py-12 text-gray-500">پیامی یافت نشد</div>
       ) : (
         <div className="space-y-4">
-          {notifications.map((notification) => (
-            <div key={notification.id} className={`rounded-lg shadow p-6 ${notification.is_read ? 'bg-gray-50' : 'bg-white'}`}>
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-lg font-semibold">{notification.title}</h3>
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  notification.notification_type === 'success' ? 'bg-green-100 text-green-800' :
-                  notification.notification_type === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-                  notification.notification_type === 'danger' ? 'bg-red-100 text-red-800' :
-                  'bg-blue-100 text-blue-800'
-                }`}>
-                  {notification.notification_type}
-                </span>
+            {(Array.isArray(notifications) ? notifications : []).map((notification) => (
+              <div key={notification?.id || Math.random()} className={`rounded-lg shadow p-6 ${notification?.is_read ? 'bg-gray-50' : 'bg-white'}`}>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-lg font-semibold">{notification?.title || 'عنوان'}</h3>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    notification?.notification_type === 'success' ? 'bg-green-100 text-green-800' :
+                    notification?.notification_type === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                    notification?.notification_type === 'danger' ? 'bg-red-100 text-red-800' :
+                    'bg-blue-100 text-blue-800'
+                  }`}>
+                    {notification?.notification_type || ''}
+                  </span>
+                </div>
+                <p className="text-gray-700">{notification?.message || ''}</p>
+                <p className="text-gray-400 text-sm mt-2">{notification?.created_at ? new Date(notification.created_at).toLocaleDateString('fa-IR') : ''}</p>
               </div>
-              <p className="text-gray-700">{notification.message}</p>
-              <p className="text-gray-400 text-sm mt-2">{new Date(notification.created_at).toLocaleDateString('fa-IR')}</p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
       )}
     </div>
   );

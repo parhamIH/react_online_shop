@@ -26,7 +26,7 @@ const team = [
 ];
 
 export default function AboutPage() {
-  const { data: videos = [] } = useAsyncData(() => DataService.getVideos(), []);
+  const { data: videos = [] } = useAsyncData(() => DataService.getVideos(), [], []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

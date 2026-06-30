@@ -54,13 +54,13 @@ export default function ProductListPage() {
             <h3 className="font-bold text-sm mb-4 flex items-center gap-2"><Filter className="w-4 h-4" /> Categories</h3>
             <div className="space-y-2">
               <Link to="/products" className={`block px-3 py-2 rounded-lg text-sm transition ${!category ? 'bg-primary-50 text-primary-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>All Products</Link>
-              {categories.map((c) => (
+              {(Array.isArray(categories) ? categories : []).map((c) => (
                 <Link
-                  key={c.id}
-                  to={`/products?category=${encodeURIComponent(c.name)}`}
-                  className={`block px-3 py-2 rounded-lg text-sm transition ${category === c.name ? 'bg-primary-50 text-primary-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+                  key={c?.id || Math.random()}
+                  to={`/products?category=${encodeURIComponent(c?.name || '')}`}
+                  className={`block px-3 py-2 rounded-lg text-sm transition ${!category ? 'bg-primary-50 text-primary-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
                 >
-                  {c.name} <span className="text-gray-400">({c.productCount})</span>
+                  {c?.name || 'Category'} <span className="text-gray-400">({c?.productCount || 0})</span>
                 </Link>
               ))}
             </div>
@@ -81,8 +81,8 @@ export default function ProductListPage() {
             <div className="text-center py-12 text-gray-500">Loading products...</div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {products.map((p) => (
-                <div key={p.id} data-animate><ProductCard product={p} /></div>
+              {(Array.isArray(products) ? products : []).map((p) => (
+                <div key={p?.id || Math.random()} data-animate><ProductCard product={p} /></div>
               ))}
             </div>
           )}

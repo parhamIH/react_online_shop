@@ -7,10 +7,11 @@ import { DataService } from '../services/dataService';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
-  const { data: product, loading } = useAsyncData(() => DataService.getProduct(id), [id]);
+  const { data: product, loading } = useAsyncData(() => DataService.getProduct(id), [id], null);
   const { data: related = [] } = useAsyncData(
     () => (product ? DataService.getRelatedProducts(product.id) : Promise.resolve([])),
     [product?.id],
+    []
   );
 
   if (loading) {
@@ -37,8 +38,8 @@ export default function ProductDetailPage() {
         <section className="mt-16 pt-8 border-t border-gray-100">
           <h2 className="text-2xl font-bold mb-6 section-title">You Might Also Like</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {related.map((p) => (
-              <div key={p.id} data-animate><ProductCard product={p} /></div>
+            {(Array.isArray(related) ? related : []).map((p) => (
+              <div key={p?.id || Math.random()} data-animate><ProductCard product={p} /></div>
             ))}
           </div>
         </section>

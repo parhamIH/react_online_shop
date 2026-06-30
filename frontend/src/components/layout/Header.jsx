@@ -2,7 +2,8 @@ import { Link, NavLink } from 'react-router-dom';
 import { Award, FileText, Home, Info, Menu, Package, ShoppingCart, User, X } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { DataService } from '../../data/data';
+import { useAsyncData } from '../../hooks/useAsyncData';
+import { DataService } from '../../services/dataService';
 import SearchBar from '../SearchBar';
 import DynamicIcon from '../DynamicIcon';
 
@@ -83,6 +84,7 @@ export default function Header({ onMenuToggle }) {
 
 export function MobileMenu({ isOpen, onClose }) {
   const { user } = useAuth();
+  const { data: categories = [] } = useAsyncData(() => DataService.getCategories(), [], []);
   return (
     <>
       <div
@@ -98,60 +100,60 @@ export function MobileMenu({ isOpen, onClose }) {
         </div>
         <nav className="p-4">
           <div className="space-y-1">
-            {navLinks.map((link) => {
-              const Icon = link.icon;
-              return (
+            {(Array.isArray(navLinks) ? navLinks : []).map((link) => {
+                  const Icon = link.icon;
+                  return (
+                    <Link
+                    key={link.to}
+                    to={link.to}
+                    onClick={onClose}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition font-medium"
+                  >
+                    <Icon className="w-5 h-5" /> {link.label}
+                  </Link>
+                );
+              })}
+              {user ? (
                 <Link
-                  key={link.to}
-                  to={link.to}
+                  key="/profile"
+                  to="/profile"
                   onClick={onClose}
                   className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition font-medium"
                 >
-                  <Icon className="w-5 h-5" /> {link.label}
+                  <User className="w-5 h-5" /> Profile
                 </Link>
-              );
-            })}
-            {user ? (
-              <Link
-                key="/profile"
-                to="/profile"
-                onClick={onClose}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition font-medium"
-              >
-                <User className="w-5 h-5" /> Profile
-              </Link>
-            ) : (
-              <>
-                <Link
-                  key="/login"
-                  to="/login"
-                  onClick={onClose}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition font-medium"
-                >
-                  <User className="w-5 h-5" /> Login
-                </Link>
-                <Link
-                  key="/register"
-                  to="/register"
-                  onClick={onClose}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition font-medium"
-                >
-                  <User className="w-5 h-5" /> Register
-                </Link>
-              </>
-            )}
+              ) : (
+                <>
+                  <Link
+                    key="/login"
+                    to="/login"
+                    onClick={onClose}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition font-medium"
+                  >
+                    <User className="w-5 h-5" /> Login
+                  </Link>
+                  <Link
+                    key="/register"
+                    to="/register"
+                    onClick={onClose}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition font-medium"
+                  >
+                    <User className="w-5 h-5" /> Register
+                  </Link>
+                </>
+              )}
           </div>
           <div className="mt-6 pt-4 border-t border-gray-100">
             <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Categories</p>
             <div className="space-y-0.5">
-              {DataService.categories.map((c) => (
+              {(Array.isArray(categories) ? categories : []).map((c) => (
                 <Link
-                  key={c.id}
-                  to={`/products?category=${encodeURIComponent(c.name)}`}
+                  key={c?.id || Math.random()}
+                  to={`/products?category=${encodeURIComponent(c?.name || '')}`}
                   onClick={onClose}
                   className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition text-sm"
                 >
-                  <DynamicIcon name={c.icon} className="w-4 h-4" /> {c.name}
+                  <DynamicIcon name={c?.icon || 'tag'} className="w-4 h-4" /> {c?.name || 'Category'}
                 </Link>
               ))}
             </div>

@@ -14,8 +14,8 @@ export default function BrandSlider({ brands = [], title = 'Top Brands' }) {
         </Link>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {brands.map((b) => (
-          <Link key={b?.id || Math.random()} to={`/brands/${b?.id || ''}`} className="card-hover flex flex-col items-center gap-3 p-6 bg-white rounded-xl border border-gray-100 hover:border-primary-200 hover:shadow-lg transition-all group">
+        {(Array.isArray(brands) ? brands : []).map((b) => (
+          <Link key={b?.id || Math.random()} to={`/brands/${b?.id || ''}`} className="card-hover flex flex-col items-center gap-3 p-6 bg-white rounded-xl border border-gray-100 hover:border-primary-200 hover:shadow-md transition-all group">
             <img src={b?.logo || 'https://via.placeholder.com/64?text=Brand'} alt={b?.name || 'Brand'} className="w-16 h-16 rounded-full object-cover border-2 border-gray-100 group-hover:border-primary-200 transition" />
             <span className="font-semibold text-sm">{b?.name || 'Brand'}</span>
             <span className="text-xs text-gray-400">{b?.productCount || 0} Products</span>

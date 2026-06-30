@@ -7,9 +7,9 @@ import { DataService } from '../services/dataService';
 
 export default function ArticleDetailPage() {
   const { id } = useParams();
-  const { data: article, loading } = useAsyncData(() => DataService.getArticle(id), [id]);
-  const { data: allArticles = [] } = useAsyncData(() => DataService.getArticles(), []);
-  const { data: videos = [] } = useAsyncData(() => DataService.getVideos(), []);
+  const { data: article, loading } = useAsyncData(() => DataService.getArticle(id), [id], null);
+  const { data: allArticles = [] } = useAsyncData(() => DataService.getArticles(), [], []);
+  const { data: videos = [] } = useAsyncData(() => DataService.getVideos(), [], []);
 
   if (loading) {
     return <div className="text-center py-20 text-gray-500">Loading article...</div>;
@@ -54,7 +54,7 @@ export default function ArticleDetailPage() {
       <section className="mt-16 pt-8 border-t border-gray-100 max-w-7xl mx-auto">
         <h2 className="text-2xl font-bold mb-6 section-title">Related Articles</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {related.map((a) => <ArticleCard key={a.id} article={a} />)}
+          {(Array.isArray(related) ? related : []).map((a) => <ArticleCard key={a?.id || Math.random()} article={a} />)}
         </div>
       </section>
     </div>

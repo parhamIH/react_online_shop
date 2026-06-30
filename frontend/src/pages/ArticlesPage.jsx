@@ -5,7 +5,7 @@ import { useAsyncData } from '../hooks/useAsyncData';
 import { DataService } from '../services/dataService';
 
 export default function ArticlesPage() {
-  const { data: articles = [], loading } = useAsyncData(() => DataService.getArticles(), []);
+  const { data: articles = [], loading } = useAsyncData(() => DataService.getArticles(), [], []);
 
   if (loading) {
     return <div className="text-center py-20 text-gray-500">Loading articles...</div>;
@@ -31,10 +31,10 @@ export default function ArticlesPage() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {rest.map((a) => (
-          <div key={a.id} data-animate><ArticleCard article={a} /></div>
-        ))}
-      </div>
+          {(Array.isArray(rest) ? rest : []).map((a) => (
+            <div key={a?.id || Math.random()} data-animate><ArticleCard article={a} /></div>
+          ))}
+        </div>
     </div>
   );
 }

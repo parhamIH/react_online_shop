@@ -16,7 +16,7 @@ export default function HomeBannerSlider({ banners = [] }) {
   return (
     <section className="slider-container rounded-2xl overflow-hidden relative group">
       <div className="slider-track" style={{ transform: `translateX(-${current * 100}%)` }}>
-        {banners.map((b) => (
+        {(Array.isArray(banners) ? banners : []).map((b) => (
           <div key={b?.id || Math.random()} className="banner-slide relative h-[300px] sm:h-[400px] md:h-[500px]">
             <img 
               src={b?.image || 'https://via.placeholder.com/1920x800?text=Banner'} 
@@ -43,14 +43,14 @@ export default function HomeBannerSlider({ banners = [] }) {
         <ChevronRight className="w-5 h-5" />
       </button>
       <div className="banner-dots absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-        {banners.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => goTo(i)}
-            className={`slider-dot w-2.5 h-2.5 rounded-full transition-all ${i === current ? 'bg-primary-500 scale-125' : 'bg-white/70'}`}
-          />
-        ))}
+        {(Array.isArray(banners) ? banners : []).map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => goTo(i)}
+              className={`slider-dot w-2.5 h-2.5 rounded-full transition-all ${i === current ? 'bg-primary-500 scale-125' : 'bg-white/70'}`}
+            />
+          ))}
       </div>
     </section>
   );

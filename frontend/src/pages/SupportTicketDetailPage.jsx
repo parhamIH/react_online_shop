@@ -56,13 +56,13 @@ export default function SupportTicketDetailPage() {
       </div>
 
       <div className="space-y-4 mb-6">
-        {(ticket.replies || []).map((r) => (
-          <div key={r.id} className={`rounded-lg shadow p-4 ${r.is_staff_reply ? 'bg-blue-50' : 'bg-white'}`}>
+        {(Array.isArray(ticket?.replies) ? ticket.replies : []).map((r) => (
+          <div key={r?.id || Math.random()} className={`rounded-lg shadow p-4 ${r?.is_staff_reply ? 'bg-blue-50' : 'bg-white'}`}>
             <div className="flex justify-between items-center mb-2">
-              <span className="font-semibold text-sm">{r.is_staff_reply ? 'پشتیبان' : r.username}</span>
-              <span className="text-xs text-gray-400">{new Date(r.created_at).toLocaleDateString('fa-IR')}</span>
+              <span className="font-semibold text-sm">{r?.is_staff_reply ? 'پشتیبان' : r?.username || 'کاربر'}</span>
+              <span className="text-xs text-gray-400">{r?.created_at ? new Date(r.created_at).toLocaleDateString('fa-IR') : ''}</span>
             </div>
-            <p className="text-gray-700">{r.message}</p>
+            <p className="text-gray-700">{r?.message || ''}</p>
           </div>
         ))}
       </div>

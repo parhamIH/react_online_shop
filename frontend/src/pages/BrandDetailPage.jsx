@@ -7,12 +7,13 @@ import { DataService } from '../services/dataService';
 
 export default function BrandDetailPage() {
   const { id } = useParams();
-  const { data: brand, loading: brandLoading } = useAsyncData(() => DataService.getBrand(id), [id]);
+  const { data: brand, loading: brandLoading } = useAsyncData(() => DataService.getBrand(id), [id], null);
   const { data: products = [], loading: productsLoading } = useAsyncData(
     () => (brand ? DataService.getProductsByBrand(brand.id) : Promise.resolve([])),
     [brand?.id],
+    []
   );
-  const { data: allBrands = [] } = useAsyncData(() => DataService.getBrands(), []);
+  const { data: allBrands = [] } = useAsyncData(() => DataService.getBrands(), [], []);
 
   if (brandLoading) {
     return <div className="text-center py-20 text-gray-500">Loading brand...</div>;
@@ -56,8 +57,8 @@ export default function BrandDetailPage() {
           <div className="text-center py-12 text-gray-500">Loading products...</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {products.map((p) => (
-              <div key={p.id} data-animate><ProductCard product={p} /></div>
+            {(Array.isArray(products) ? products : []).map((p) => (
+              <div key={p?.id || Math.random()} data-animate><ProductCard product={p} /></div>
             ))}
           </div>
         )}

@@ -124,27 +124,27 @@ export default function AddressesPage() {
         <div className="text-center py-12 text-gray-500">آدرسی یافت نشد</div>
       ) : (
         <div className="space-y-4">
-          {addresses.map((address) => (
-            <div key={address.id} className="bg-white rounded-lg shadow p-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-semibold">{address.title_address}</h3>
-                  <p className="text-gray-600 mt-1">
-                    {address.city}, {address.province}
-                  </p>
-                  <p className="text-gray-700 mt-2">{address.full_address}</p>
-                  <p className="text-gray-500 text-sm mt-2">کد پستی: {address.postcode}</p>
+              {(Array.isArray(addresses) ? addresses : []).map((address) => (
+                <div key={address?.id || Math.random()} className="bg-white rounded-lg shadow p-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-lg font-semibold">{address?.title_address || 'عنوان'}</h3>
+                      <p className="text-gray-600 mt-1">
+                        {address?.city || ''}, {address?.province || ''}
+                      </p>
+                      <p className="text-gray-700 mt-2">{address?.full_address || ''}</p>
+                      <p className="text-gray-500 text-sm mt-2">کد پستی: {address?.postcode || ''}</p>
+                    </div>
+                    <button
+                      onClick={() => handleDelete(address?.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      حذف
+                    </button>
+                  </div>
                 </div>
-                <button
-                  onClick={() => handleDelete(address.id)}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  حذف
-                </button>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
       )}
     </div>
   );

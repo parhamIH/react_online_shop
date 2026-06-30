@@ -46,7 +46,7 @@ function ProfileLayout() {
               <h2 className="text-lg font-bold mb-4">حساب کاربری</h2>
               <p className="text-sm text-gray-600 mb-4">سلام, {user?.username}!</p>
               <ul className="space-y-2">
-                {menuItems.map((item) => (
+                {(Array.isArray(menuItems) ? menuItems : []).map((item) => (
                 <li key={item.path}>
                   <Link
                     to={item.path}

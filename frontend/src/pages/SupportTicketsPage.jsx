@@ -115,30 +115,30 @@ export default function SupportTicketsPage() {
         <div className="text-center py-12 text-gray-500">تیکتی یافت نشد</div>
       ) : (
         <div className="space-y-4">
-          {tickets.map((ticket) => (
-            <Link key={ticket.id} to={`/support-tickets/${ticket.id}`} className="block">
-              <div className="bg-white rounded-lg shadow p-6 hover:shadow-md transition">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-lg font-semibold">{ticket.subject}</h3>
-                    <p className="text-gray-500 text-sm mt-1">تاریخ: {new Date(ticket.created_at).toLocaleDateString('fa-IR')}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                      ticket.status === 'resolved' ? 'bg-green-100 text-green-800' :
-                      ticket.status === 'closed' ? 'bg-gray-100 text-gray-800' :
-                      ticket.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {ticket.status}
-                    </span>
-                    <p className="text-xs text-gray-400 mt-1">{ticket.priority}</p>
+            {(Array.isArray(tickets) ? tickets : []).map((ticket) => (
+              <Link key={ticket?.id || Math.random()} to={`/support-tickets/${ticket?.id || ''}`} className="block">
+                <div className="bg-white rounded-lg shadow p-6 hover:shadow-md transition">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-lg font-semibold">{ticket?.subject || 'موضوع'}</h3>
+                      <p className="text-gray-500 text-sm mt-1">تاریخ: {ticket?.created_at ? new Date(ticket.created_at).toLocaleDateString('fa-IR') : ''}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                        ticket?.status === 'resolved' ? 'bg-green-100 text-green-800' :
+                        ticket?.status === 'closed' ? 'bg-gray-100 text-gray-800' :
+                        ticket?.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {ticket?.status || ''}
+                      </span>
+                      <p className="text-xs text-gray-400 mt-1">{ticket?.priority || ''}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
       )}
     </div>
   );
