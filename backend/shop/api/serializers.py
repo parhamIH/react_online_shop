@@ -1,7 +1,7 @@
 from django.conf import settings
 from rest_framework import serializers
 
-from shop.account.models import ClientAddress, FavouriteProducts, Profile
+from shop.account.models import ClientAddress, FavouriteProducts, Profile, Notification, UserCoupon
 from shop.articles.models import Article
 from shop.cart.models import Cart, CartItem
 from shop.categories.models import BaseCategories, Category
@@ -9,6 +9,8 @@ from shop.home.models import FeaturedBrand, HomeSlider, PromotionalBanner
 from shop.products.models import Gallery, Product, ProductPackage
 from shop.public.models import Brand
 from shop.reviews.models import Comment
+from shop.order.models import Order
+from shop.support.models import SupportTicket, TicketReply
 
 
 def absolute_media_url(request, file_field):
@@ -356,3 +358,78 @@ class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, min_length=8)
     phone_number = serializers.CharField(max_length=15, required=False, allow_blank=True)
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    productName = serializers.CharField(source="product.name", read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ["id", "product", "productName", "text", "rating", "is_approved", "created_at"]
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ["id", "title", "message", "notification_type", "is_read", "related_url", "created_at"]
+
+
+class FavouriteProductsSerializer(serializers.ModelSerializer):
+    products = ProductListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = FavouriteProducts
+        fields = ["id", "products", "created_at", "updated_at"]
+
+
+class UserCouponSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserCoupon
+        fields = ["id", "code", "discount", "is_active", "created_at", "expire_at"]
+
+
+class TicketReplySerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True)
+
+    class Meta:
+        model = TicketReply
+        fields = ["id", "message", "attachment", "is_staff_reply", "created_at", "username"]
+
+
+class SupportTicketSerializer(serializers.ModelSerializer):
+    replies = TicketReplySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = SupportTicket
+        fields = [
+            "id",
+            "subject",
+            "message",
+            "department",
+            "priority",
+            "status",
+            "created_at",
+            "updated_at",
+            "replies"
+        ]
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    address = ClientAddressSerializer(read_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            "id",
+            "order_number",
+            "order_date",
+            "payment_status",
+            "status",
+            "shipping_method",
+            "shipping_cost",
+            "total_price",
+            "address",
+            "shipping_date",
+            "delivery_date",
+            "jalali_delivery_date"
+        ]

@@ -6,13 +6,16 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from shop.account.models import ClientAddress, Profile
+from shop.account.models import ClientAddress, Profile, Notification, FavouriteProducts, UserCoupon
 from shop.articles.models import Article
 from shop.cart.models import Cart, CartItem
 from shop.categories.models import BaseCategories, Category
 from shop.home.models import FeaturedBrand, HomeSlider, PromotionalBanner
 from shop.products.models import Product, ProductPackage
 from shop.public.models import Brand
+from shop.order.models import Order
+from shop.support.models import SupportTicket, TicketReply
+from shop.reviews.models import Comment
 
 from .serializers import (
     ArticleDetailSerializer,
@@ -30,6 +33,13 @@ from .serializers import (
     ProfileSerializer,
     PromotionalBannerSerializer,
     RegisterSerializer,
+    CommentSerializer,
+    NotificationSerializer,
+    FavouriteProductsSerializer,
+    UserCouponSerializer,
+    SupportTicketSerializer,
+    TicketReplySerializer,
+    OrderSerializer,
 )
 
 
@@ -315,3 +325,80 @@ class CartRemoveItemView(CartMixin, APIView):
         if not deleted:
             return Response({"detail": "Item not found."}, status=status.HTTP_404_NOT_FOUND)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class OrderListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).order_by("-order_date")
+
+
+class OrderDetailView(generics.RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
+
+
+class CommentListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        return Comment.objects.filter(user=self.request.user).order_by("-created_at")
+
+
+class NotificationListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user).order_by("-created_at")
+
+
+class FavouriteProductsView(generics.RetrieveUpdateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = FavouriteProductsSerializer
+
+    def get_object(self):
+        fav, _ = FavouriteProducts.objects.get_or_create(user=self.request.user)
+        return fav
+
+
+class UserCouponListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserCouponSerializer
+
+    def get_queryset(self):
+        return UserCoupon.objects.filter(user=self.request.user).order_by("-created_at")
+
+
+class SupportTicketListView(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = SupportTicketSerializer
+
+    def get_queryset(self):
+        return SupportTicket.objects.filter(user=self.request.user).order_by("-created_at")
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class SupportTicketDetailView(generics.RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = SupportTicketSerializer
+
+    def get_queryset(self):
+        return SupportTicket.objects.filter(user=self.request.user)
+
+
+class TicketReplyCreateView(generics.CreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = TicketReplySerializer
+
+    def perform_create(self, serializer):
+        ticket = SupportTicket.objects.get(pk=self.kwargs["ticket_id"], user=self.request.user)
+        serializer.save(ticket=ticket, user=self.request.user, is_staff_reply=False)

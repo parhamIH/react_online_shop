@@ -338,6 +338,37 @@ def create_favorites(users, products):
         fav, _ = FavouriteProducts.objects.get_or_create(user=user)
         fav.products.add(*random.sample(products, k=min(5, len(products))))
 
+def create_support_tickets(users):
+    for user in users:
+        for _ in range(random.randint(0, 2)):
+            ticket = SupportTicket.objects.create(
+                user=user,
+                subject=fake.sentence(nb_words=6),
+                message=fake.text(max_nb_chars=500),
+                department=random.choice(['general', 'technical', 'billing', 'sales']),
+                priority=random.choice(['low', 'medium', 'high', 'urgent']),
+                status=random.choice(['pending', 'in_progress', 'resolved', 'closed'])
+            )
+            # Add some replies
+            for __ in range(random.randint(0, 3)):
+                TicketReply.objects.create(
+                    ticket=ticket,
+                    user=random.choice(users),
+                    message=fake.text(max_nb_chars=200),
+                    is_staff_reply=random.choice([True, False])
+                )
+
+def create_user_coupons(users):
+    for user in users:
+        for _ in range(random.randint(0, 3)):
+            UserCoupon.objects.create(
+                user=user,
+                code=fake.word().upper() + str(random.randint(100, 999)),
+                discount=random.randint(5, 30),
+                is_active=random.choice([True, False]),
+                expire_at=fake.date_time_this_year() if random.random() > 0.3 else None
+            )
+
 def create_home_content(brands):
     for i in range(3):
         HomeSlider.objects.get_or_create(
@@ -487,7 +518,13 @@ def main():
     
     print("Creating favorites...")
     create_favorites(users, products)
-    
+
+    print("Creating support tickets...")
+    create_support_tickets(users)
+
+    print("Creating user coupons...")
+    create_user_coupons(users)
+
     print("Creating site settings...")
     create_site_settings()
     

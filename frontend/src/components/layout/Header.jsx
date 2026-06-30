@@ -1,6 +1,7 @@
 import { Link, NavLink } from 'react-router-dom';
 import { Award, FileText, Home, Info, Menu, Package, ShoppingCart, User, X } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import { DataService } from '../../data/data';
 import SearchBar from '../SearchBar';
 import DynamicIcon from '../DynamicIcon';
@@ -15,6 +16,7 @@ const navLinks = [
 
 export default function Header({ onMenuToggle }) {
   const { toggle, getCount } = useCart();
+  const { user, logout } = useAuth();
   const count = getCount();
 
   return (
@@ -40,8 +42,7 @@ export default function Header({ onMenuToggle }) {
                 className={({ isActive }) =>
                   `px-4 py-2 text-sm font-medium rounded-lg transition-all ${
                     isActive ? 'text-primary-600 bg-primary-50' : 'text-gray-600 hover:text-primary-600 hover:bg-primary-50'
-                  }`
-                }
+                  }`}
               >
                 {link.label}
               </NavLink>
@@ -58,9 +59,20 @@ export default function Header({ onMenuToggle }) {
                 </span>
               )}
             </button>
-            <button type="button" className="hidden md:block p-2 hover:bg-gray-100 rounded-lg transition">
-              <User className="w-5 h-5" />
-            </button>
+            {user ? (
+              <Link to="/profile" className="hidden md:block p-2 hover:bg-gray-100 rounded-lg transition">
+                <User className="w-5 h-5" />
+              </Link>
+            ) : (
+              <div className="hidden md:flex items-center gap-2">
+                <Link to="/login" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 transition">
+                  Login
+                </Link>
+                <Link to="/register" className="px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">
+                  Register
+                </Link>
+              </div>
+            )}
           </div>
         </div>
         <div className="md:hidden pb-3"><SearchBar /></div>
@@ -70,6 +82,7 @@ export default function Header({ onMenuToggle }) {
 }
 
 export function MobileMenu({ isOpen, onClose }) {
+  const { user } = useAuth();
   return (
     <>
       <div
@@ -98,6 +111,35 @@ export function MobileMenu({ isOpen, onClose }) {
                 </Link>
               );
             })}
+            {user ? (
+              <Link
+                key="/profile"
+                to="/profile"
+                onClick={onClose}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition font-medium"
+              >
+                <User className="w-5 h-5" /> Profile
+              </Link>
+            ) : (
+              <>
+                <Link
+                  key="/login"
+                  to="/login"
+                  onClick={onClose}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition font-medium"
+                >
+                  <User className="w-5 h-5" /> Login
+                </Link>
+                <Link
+                  key="/register"
+                  to="/register"
+                  onClick={onClose}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition font-medium"
+                >
+                  <User className="w-5 h-5" /> Register
+                </Link>
+              </>
+            )}
           </div>
           <div className="mt-6 pt-4 border-t border-gray-100">
             <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Categories</p>

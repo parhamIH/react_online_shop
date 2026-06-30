@@ -1,0 +1,4 @@
+# Rebuild specific service
+docker compose build --no-cache frontend backend
+# Then start
+docker compose up -d

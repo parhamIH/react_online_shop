@@ -25,4 +25,13 @@ urlpatterns = [
     path("cart/items/", views.CartAddItemView.as_view(), name="api-cart-add"),
     path("cart/items/<int:item_id>/", views.CartUpdateItemView.as_view(), name="api-cart-update"),
     path("cart/items/<int:item_id>/remove/", views.CartRemoveItemView.as_view(), name="api-cart-remove"),
+    path("orders/", views.OrderListView.as_view(), name="api-orders"),
+    path("orders/<int:pk>/", views.OrderDetailView.as_view(), name="api-order-detail"),
+    path("comments/", views.CommentListView.as_view(), name="api-comments"),
+    path("notifications/", views.NotificationListView.as_view(), name="api-notifications"),
+    path("favorites/", views.FavouriteProductsView.as_view(), name="api-favorites"),
+    path("coupons/", views.UserCouponListView.as_view(), name="api-coupons"),
+    path("support-tickets/", views.SupportTicketListView.as_view(), name="api-support-tickets"),
+    path("support-tickets/<int:pk>/", views.SupportTicketDetailView.as_view(), name="api-support-ticket-detail"),
+    path("support-tickets/<int:ticket_id>/replies/", views.TicketReplyCreateView.as_view(), name="api-ticket-reply-create"),
 ]
