@@ -20,6 +20,7 @@ export function useAsyncData(loader, deps = [], defaultValue = null) {
       .catch((err) => {
         if (!cancelled) {
           setError(err);
+          setData(defaultValue);
         }
       })
       .finally(() => {

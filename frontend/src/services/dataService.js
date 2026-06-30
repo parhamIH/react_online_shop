@@ -6,7 +6,7 @@ const useApi = import.meta.env.VITE_USE_API === 'true';
 function mapHomeData(home = {}) {
   const safeHome = home || {};
   
-  const banners = (safeHome.banners || []).filter(Boolean).map((b) => ({
+  const banners = (Array.isArray(safeHome.banners) ? safeHome.banners : []).filter(Boolean).map((b) => ({
     id: b?.id || Math.random(),
     title: b?.title || '',
     subtitle: b?.subtitle || '',
@@ -15,17 +15,20 @@ function mapHomeData(home = {}) {
     link: b?.link || '/products',
   }));
 
-  const brands = (safeHome.featuredBrands || []).filter(Boolean).map((fb) => fb?.brand).filter(Boolean);
+  const brands = (Array.isArray(safeHome.featuredBrands) ? safeHome.featuredBrands : [])
+    .filter(Boolean)
+    .map((fb) => fb?.brand)
+    .filter(Boolean);
 
   return {
     banners,
     brands,
-    promotionalBanners: safeHome.promotionalBanners || []
+    promotionalBanners: Array.isArray(safeHome.promotionalBanners) ? safeHome.promotionalBanners : []
   };
 }
 
 function mapCategories(categories = []) {
-  return (categories || []).map((c) => ({
+  return (Array.isArray(categories) ? categories : []).map((c) => ({
     id: c?.id,
     name: c?.en_name || c?.name,
     icon: 'tag',
@@ -36,7 +39,7 @@ function mapCategories(categories = []) {
 }
 
 const apiService = {
-  getVideos: () => Promise.resolve(mockData.videos || []),
+  getVideos: () => Promise.resolve(Array.isArray(mockData.videos) ? mockData.videos : []),
 
   getHome: async () => {
     try {
@@ -57,7 +60,8 @@ const apiService = {
 
   getBrands: async () => {
     try {
-      return await shopApi.getBrands();
+      const res = await shopApi.getBrands();
+      return Array.isArray(res) ? res : [];
     } catch (err) {
       return [];
     }
@@ -65,25 +69,25 @@ const apiService = {
 
   getBrand: (id) => shopApi.getBrand(id).catch(() => null),
 
-  getProducts: (params = {}) => shopApi.getProducts(params).catch(() => []),
+  getProducts: (params = {}) => shopApi.getProducts(params).then(res => Array.isArray(res) ? res : []).catch(() => []),
 
   getProduct: (id) => shopApi.getProduct(id).catch(() => null),
 
-  getOffers: () => shopApi.getOffers().catch(() => []),
+  getOffers: () => shopApi.getOffers().then(res => Array.isArray(res) ? res : []).catch(() => []),
 
-  getNewArrivals: () => shopApi.getNewArrivals().catch(() => []),
+  getNewArrivals: () => shopApi.getNewArrivals().then(res => Array.isArray(res) ? res : []).catch(() => []),
 
-  getRelatedProducts: (productId) => shopApi.getRelatedProducts(productId).catch(() => []),
+  getRelatedProducts: (productId) => shopApi.getRelatedProducts(productId).then(res => Array.isArray(res) ? res : []).catch(() => []),
 
-  getArticles: () => shopApi.getArticles().catch(() => []),
+  getArticles: () => shopApi.getArticles().then(res => Array.isArray(res) ? res : []).catch(() => []),
 
   getArticle: (id) => shopApi.getArticle(id).catch(() => null),
 
-  searchProducts: (query) => shopApi.searchProducts(query).catch(() => []),
+  searchProducts: (query) => shopApi.searchProducts(query).then(res => Array.isArray(res) ? res : []).catch(() => []),
 
-  getProductsByCategory: (cat) => shopApi.getProducts({ category: cat }).catch(() => []),
+  getProductsByCategory: (cat) => shopApi.getProducts({ category: cat }).then(res => Array.isArray(res) ? res : []).catch(() => []),
 
-  getProductsByBrand: (brandId) => shopApi.getProducts({ brand: brandId }).catch(() => []),
+  getProductsByBrand: (brandId) => shopApi.getProducts({ brand: brandId }).then(res => Array.isArray(res) ? res : []).catch(() => []),
 };
 
 const mockService = {

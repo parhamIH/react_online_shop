@@ -1,4 +1,22 @@
-# Rebuild specific service
-docker compose build --no-cache frontend backend
-# Then start
+# React Shop Project - How to Run
+# ==================================
+
+# 1. Make sure Docker and Docker Compose (or Docker Desktop) are installed and running!
+
+# 2. To start the project (first time or after code changes)
+#    If you want to rebuild all services from scratch (recommended after code changes):
+docker compose build --no-cache
+
+# 3. Start all containers in detached mode:
 docker compose up -d
+
+# 4. Wait 20-30 seconds for all services to initialize, then visit:
+#    - Frontend (main shop): http://localhost
+#    - Django Admin (if needed): http://localhost/admin
+
+# 5. To stop all containers:
+docker compose down
+
+# 6. To rebuild only specific services (e.g., only frontend or only backend):
+#    docker compose build --no-cache frontend
+#    docker compose build --no-cache backend
