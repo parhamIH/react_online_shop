@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+echo "Fixing upload directory permissions..."
+mkdir -p /app/uploads
+chown -R appuser:appuser /app/uploads
+
 echo "Waiting for database..."
 until python - <<'PY'
 import os

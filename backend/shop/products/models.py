@@ -32,15 +32,20 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        # باز کردن تصویر
-        if self.image and hasattr(self.image, 'path') and os.path.isfile(self.image.path):
-            img = Image.open(self.image.path)
-            # تنظیم ابعاد جدید
-            output_size = (800, 800)
-            # تغییر اندازه تصویر به ابعاد مشخص
-            img = img.resize(output_size, Image.LANCZOS)  # استفاده از LANCZOS برای کیفیت بهتر
-            # ذخیره تصویر با ابعاد جدید
-            img.save(self.image.path)
+        # باز کردن تصویر (safe)
+        if self.image:
+            try:
+                if hasattr(self.image, 'path') and os.path.isfile(self.image.path):
+                    img = Image.open(self.image.path)
+                    # تنظیم ابعاد جدید
+                    output_size = (800, 800)
+                    # تغییر اندازه تصویر به ابعاد مشخص
+                    img = img.resize(output_size, Image.LANCZOS)  # استفاده از LANCZOS برای کیفیت بهتر
+                    # ذخیره تصویر با ابعاد جدید
+                    img.save(self.image.path)
+            except Exception as e:
+                # اگر خطایی در обработه، چیزی انجام نمی‌کنیم (تصویر به شکل اصلی باقی می‌ماند
+                pass
 
 #__________________________________________ ------ProductPackage------ _______________________________________
 class ProductPackage(models.Model):
@@ -114,9 +119,13 @@ class Gallery(models.Model):
         
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        if self.image and hasattr(self.image, 'path') and os.path.isfile(self.image.path):
-            img = Image.open(self.image.path)
-            output_size = (800, 800)
-            img = img.resize(output_size, Image.LANCZOS)
-            img.save(self.image.path)
+        if self.image:
+            try:
+                if hasattr(self.image, 'path') and os.path.isfile(self.image.path):
+                    img = Image.open(self.image.path)
+                    output_size = (800, 800)
+                    img = img.resize(output_size, Image.LANCZOS)
+                    img.save(self.image.path)
+            except Exception as e:
+                pass
 

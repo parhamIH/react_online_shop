@@ -40,8 +40,9 @@ services:
       DB_PORT: "5432"
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,backend,nginx}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost,http://127.0.0.1}
-      DEBUG: "False"
+      DEBUG: "True"
     volumes:
+      - ./backend/shop:/app/shop  # Mount local backend code for development
       - media_data:/app/uploads
       - static_data:/app/staticfiles
     depends_on:

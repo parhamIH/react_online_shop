@@ -42,11 +42,15 @@ class Brand(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        if self.logo and hasattr(self.logo, 'path') and os.path.isfile(self.logo.path):
-            img = Image.open(self.logo.path)
-            output_size = (300,300)
-            img.thumbnail(output_size, Image.LANCZOS)
-            img.save(self.logo.path)
+        if self.logo:
+            try:
+                if hasattr(self.logo, 'path') and os.path.isfile(self.logo.path):
+                    img = Image.open(self.logo.path)
+                    output_size = (300,300)
+                    img.thumbnail(output_size, Image.LANCZOS)
+                    img.save(self.logo.path)
+            except Exception as e:
+                pass
 
     def __str__(self):
         return self.en_name

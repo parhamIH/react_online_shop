@@ -24,11 +24,15 @@ class HomeSlider(models.Model):
     
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        if self.image and hasattr(self.image, 'path') and os.path.isfile(self.image.path):
-            img = Image.open(self.image.path)
-            output_size = (1920, 800)  # مناسب برای اسلایدر عریض
-            img = img.resize(output_size, Image.LANCZOS)
-            img.save(self.image.path)
+        if self.image:
+            try:
+                if hasattr(self.image, 'path') and os.path.isfile(self.image.path):
+                    img = Image.open(self.image.path)
+                    output_size = (1920, 800)  # مناسب برای اسلایدر عریض
+                    img = img.resize(output_size, Image.LANCZOS)
+                    img.save(self.image.path)
+            except Exception as e:
+                pass
 
 #__________________________________________ ------PromotionalBanner------ _______________________________________
 class PromotionalBanner(models.Model):
@@ -63,17 +67,21 @@ class PromotionalBanner(models.Model):
     
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        if self.image and hasattr(self.image, 'path') and os.path.isfile(self.image.path):
-            img = Image.open(self.image.path)
-            # تنظیم اندازه بر اساس نوع بنر
-            if self.size == 'full':
-                output_size = (1200, 300)
-            elif self.size == 'half':
-                output_size = (600, 300)
-            else:  # third
-                output_size = (400, 300)
-            img = img.resize(output_size, Image.LANCZOS)
-            img.save(self.image.path)
+        if self.image:
+            try:
+                if hasattr(self.image, 'path') and os.path.isfile(self.image.path):
+                    img = Image.open(self.image.path)
+                    # تنظیم اندازه بر اساس نوع بنر
+                    if self.size == 'full':
+                        output_size = (1200, 300)
+                    elif self.size == 'half':
+                        output_size = (600, 300)
+                    else:  # third
+                        output_size = (400, 300)
+                    img = img.resize(output_size, Image.LANCZOS)
+                    img.save(self.image.path)
+            except Exception as e:
+                pass
 #__________________________________________ ------FeaturedBrand------ _______________________________________
 # مدل برای نمایش ویژه برندها در صفحه اصلی
 class FeaturedBrand(models.Model):
