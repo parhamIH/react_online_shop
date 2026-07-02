@@ -286,10 +286,22 @@ class CartAddItemView(CartMixin, APIView):
         if not package:
             return Response({"detail": "Package not found."}, status=status.HTTP_404_NOT_FOUND)
 
+        if package.quantity <= 0:
+            return Response({"detail": "This product is out of stock."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if count <= 0:
+            return Response({"detail": "Count must be greater than zero."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if count > package.quantity:
+            return Response({"detail": f"Only {package.quantity} items available in stock."}, status=status.HTTP_400_BAD_REQUEST)
+
         cart = self.get_or_create_cart(request.user)
         item, created = CartItem.objects.get_or_create(cart=cart, package=package, defaults={"count": count})
         if not created:
-            item.count += count
+            new_count = item.count + count
+            if new_count > package.quantity:
+                return Response({"detail": f"Only {package.quantity} items available in stock (you already have {item.count} in cart)."}, status=status.HTTP_400_BAD_REQUEST)
+            item.count = new_count
             item.save()
 
         return Response(CartItemSerializer(item, context={"request": request}).data, status=status.HTTP_201_CREATED)
@@ -310,6 +322,11 @@ class CartUpdateItemView(CartMixin, APIView):
             if count <= 0:
                 item.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
+            
+            package = item.package
+            if count > package.quantity:
+                return Response({"detail": f"Only {package.quantity} items available in stock."}, status=status.HTTP_400_BAD_REQUEST)
+            
             item.count = count
             item.save()
 
@@ -402,3 +419,296 @@ class TicketReplyCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         ticket = SupportTicket.objects.get(pk=self.kwargs["ticket_id"], user=self.request.user)
         serializer.save(ticket=ticket, user=self.request.user, is_staff_reply=False)
+
+
+#__________________________________________ ------Verification (SMS/Email)------ _______________________________________
+class SendVerificationCodeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from django.utils import timezone
+        from datetime import timedelta
+        import random
+
+        profile = request.user.profile
+        phone_number = request.data.get('phone_number')
+        if not phone_number:
+            return Response({'detail': 'شماره موبایل الزامی است'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # اعتبارسنجی شماره موبایل ایران
+        import re
+        if not re.match(r'^09\d{9}$', phone_number):
+            return Response({'detail': 'شماره موبایل وارد شده معتبر نیست'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # بررسی اینکه آیا در 2 دقیقه اخیر کد ارسال شده یا نه
+        if profile.verification_code_created_at:
+            time_since_last_code = timezone.now() - profile.verification_code_created_at
+            if time_since_last_code < timedelta(minutes=2):
+                return Response({'detail': 'لطفاً 2 دقیقه دیگر تلاش کنید'}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        # تولید کد تایید 6 رقمی
+        verification_code = str(random.randint(100000, 999999))
+        
+        # ذخیره کد تایید و زمان آن
+        profile.phone_number = phone_number
+        profile.verification_code = verification_code
+        profile.verification_code_created_at = timezone.now()
+        profile.is_phone_verified = False
+        profile.save()
+
+        # TODO: در محیط واقعی، اینجا باید کد را از طریق SMS ارسال کنید
+        # برای این مثال، فقط کد را در پاسخ برمی‌گردانیم (در تولید نباید این کار را کنید!)
+        print(f"SMS to {phone_number}: Your verification code is {verification_code}")
+
+        return Response({
+            'detail': 'کد تایید ارسال شد',
+            'verification_code': verification_code  # فقط برای تست! در محیط واقعی این خط را حذف کنید!
+        }, status=status.HTTP_200_OK)
+
+
+class VerifyVerificationCodeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from django.utils import timezone
+        from datetime import timedelta
+
+        profile = request.user.profile
+        code = request.data.get('code')
+
+        if not code:
+            return Response({'detail': 'کد تایید الزامی است'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # بررسی کد تایید
+        if not profile.verification_code or profile.verification_code != code:
+            return Response({'detail': 'کد تایید اشتباه است'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # بررسی منقضی شدن کد (معتبر 5 دقیقه)
+        if profile.verification_code_created_at:
+            time_since_code_sent = timezone.now() - profile.verification_code_created_at
+            if time_since_code_sent > timedelta(minutes=5):
+                return Response({'detail': 'کد تایید منقضی شده است'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # تایید موبایل
+        profile.is_phone_verified = True
+        profile.verification_code = None
+        profile.verification_code_created_at = None
+        profile.save()
+
+        return Response({'detail': 'شماره موبایل با موفقیت تایید شد'}, status=status.HTTP_200_OK)
+
+
+#__________________________________________ ------Coupon (Apply)------ _______________________________________
+class ApplyCouponView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        code = request.data.get('code')
+        cart = Cart.objects.get(user=request.user, is_paid=False)
+
+        if not code:
+            return Response({'detail': 'کد تخفیف الزامی است'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # پیدا کردن کوپن
+        from shop.account.models import Coupon
+        try:
+            coupon = Coupon.objects.get(code=code)
+        except Coupon.DoesNotExist:
+            return Response({'detail': 'کد تخفیف نامعتبر است'}, status=status.HTTP_404_NOT_FOUND)
+
+        # بررسی اعتبار کوپن
+        if not coupon.is_valid():
+            return Response({'detail': 'کد تخفیف معتبر نیست یا منقضی شده است'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # بررسی حداقل مبلغ سفارش
+        cart_total = cart.total_price()
+        if cart_total < coupon.min_order_amount:
+            return Response({'detail': f'حداقل مبلغ سفارش برای استفاده از این کوپن {coupon.min_order_amount} تومان است'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # محاسبه تخفیف
+        discount_amount = int(cart_total * (coupon.discount_percent / 100))
+        if coupon.max_discount_amount > 0:
+            discount_amount = min(discount_amount, coupon.max_discount_amount)
+
+        # ذخیره کوپن در session یا cart (برای این مثال در response برمی‌گردانیم)
+        return Response({
+            'discount_amount': discount_amount,
+            'discount_percent': coupon.discount_percent,
+            'total_after_discount': cart_total - discount_amount
+        }, status=status.HTTP_200_OK)
+
+
+#__________________________________________ ------ZarinPal Payment------ _______________________________________
+class ZarinPalPaymentRequestView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        import requests
+        from django.conf import settings
+
+        # اطلاعات مورد نیاز برای پرداخت
+        cart = Cart.objects.get(user=request.user, is_paid=False)
+        amount = int(cart.total_price() * 10)  # تبدیل تومان به ریال
+        description = f"پرداخت سفارش {cart.id}"
+        email = request.user.email or "test@example.com"
+        phone = request.user.profile.phone_number or "09123456789"
+
+        # TODO: در محیط واقعی، این اطلاعات را از settings بخوانید
+        MERCHANT_ID = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"  # شناسه درگاه زرین‌پال شما
+        ZARINPAL_REQUEST_URL = "https://api.zarinpal.com/pg/v4/payment/request.json"
+        ZARINPAL_START_PAY_URL = "https://www.zarinpal.com/pg/StartPay/"
+
+        payload = {
+            "merchant_id": MERCHANT_ID,
+            "amount": amount,
+            "callback_url": request.build_absolute_uri('/api/payment/verify/'),
+            "description": description,
+            "metadata": {
+                "email": email,
+                "mobile": phone
+            }
+        }
+
+        try:
+            # ارسال درخواست به زرین‌پال
+            response = requests.post(ZARINPAL_REQUEST_URL, json=payload, timeout=10)
+            result = response.json()
+
+            if result['data']['code'] == 100:
+                authority = result['data']['authority']
+                
+                # TODO: ذخیره authority در دیتابیس برای بعد
+                return Response({
+                    'payment_url': f"{ZARINPAL_START_PAY_URL}{authority}",
+                    'authority': authority
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({'detail': 'خطا در اتصال به درگاه پرداخت'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'detail': f'خطا در درخواست پرداخت: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ZarinPalPaymentVerifyView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        import requests
+        from django.conf import settings
+        from shop.order.models import Order
+
+        authority = request.GET.get('Authority')
+        status = request.GET.get('Status')
+
+        if status != 'OK':
+            return Response({'detail': 'پرداخت ناموفق بود'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # TODO: پیدا کردن cart از authority (در این مثال یک cart به صورت hardcode انتخاب می‌کنیم)
+        # در محیط واقعی، باید authority را در دیتابیس ذخیره کرده و از آن پیدا کنید
+        cart = Cart.objects.filter(is_paid=False).first()
+        if not cart:
+            return Response({'detail': 'سبد خرید یافت نشد'}, status=status.HTTP_404_NOT_FOUND)
+
+        MERCHANT_ID = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+        amount = int(cart.total_price() * 10)  # تبدیل تومان به ریال
+        ZARINPAL_VERIFY_URL = "https://api.zarinpal.com/pg/v4/payment/verify.json"
+
+        payload = {
+            "merchant_id": MERCHANT_ID,
+            "amount": amount,
+            "authority": authority
+        }
+
+        try:
+            response = requests.post(ZARINPAL_VERIFY_URL, json=payload, timeout=10)
+            result = response.json()
+
+            if result['data']['code'] == 100 or result['data']['code'] == 101:
+                # پرداخت موفقیت‌آمیز
+                cart.is_paid = True
+                cart.save()
+
+                # ایجاد سفارش (Order)
+                # در این مثال، از signal قبلی استفاده می‌کنیم یا به صورت دستی ایجاد می‌کنیم
+                return Response({
+                    'detail': 'پرداخت موفقیت‌آمیز بود',
+                    'ref_id': result['data']['ref_id'],
+                    'cart_id': cart.id
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({'detail': 'خطا در تایید پرداخت'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'detail': f'خطا در تایید پرداخت: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+#__________________________________________ ------Checkout------ _______________________________________
+class CheckoutView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        from shop.order.models import Order
+        from shop.account.models import Coupon
+
+        cart = Cart.objects.get(user=request.user, is_paid=False)
+        address_id = request.data.get('address_id')
+        shipping_method = request.data.get('shipping_method')
+        coupon_code = request.data.get('coupon_code')
+
+        if not address_id or not shipping_method:
+            return Response({'detail': 'آدرس و روش ارسال الزامی است'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # پیدا کردن آدرس
+        address = ClientAddress.objects.get(pk=address_id, user=request.user)
+
+        # محاسبه هزینه ارسال
+        shipping_cost = 0
+        if shipping_method == 'post':
+            shipping_cost = 20000  # مثال
+        elif shipping_method == 'tipax':
+            shipping_cost = 30000
+        elif shipping_method == 'express':
+            shipping_cost = 50000
+
+        # اعمال کوپن
+        discount_amount = 0
+        if coupon_code:
+            try:
+                coupon = Coupon.objects.get(code=coupon_code)
+                if coupon.is_valid():
+                    cart_total = cart.total_price()
+                    if cart_total >= coupon.min_order_amount:
+                        discount_amount = int(cart_total * (coupon.discount_percent / 100))
+                        if coupon.max_discount_amount > 0:
+                            discount_amount = min(discount_amount, coupon.max_discount_amount)
+                        # افزایش تعداد استفاده از کوپن
+                        coupon.used_count += 1
+                        coupon.save()
+            except Coupon.DoesNotExist:
+                pass
+
+        # محاسبه مبلغ نهایی
+        total_price = cart.total_price() + shipping_cost - discount_amount
+
+        # ایجاد سفارش
+        order = Order.objects.create(
+            user=request.user,
+            cart=cart,
+            address=address,
+            order_number=str(order.id),
+            payment_method='online',
+            payment_status='در انتظار پرداخت',
+            status='در حال انتظار',
+            shipping_method=shipping_method,
+            shipping_cost=shipping_cost,
+            total_price=total_price,
+            discount_code=coupon_code,
+            discount_amount=discount_amount
+        )
+
+        # TODO: در این مرحله باید کاربر را به درگاه پرداخت هدایت کنید
+        return Response({
+            'order_id': order.id,
+            'order_number': order.order_number,
+            'total_price': total_price,
+            'shipping_cost': shipping_cost,
+            'discount_amount': discount_amount
+        }, status=status.HTTP_201_CREATED)

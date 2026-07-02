@@ -8,14 +8,15 @@ export function CartProvider({ children }) {
   const [isOpen, setIsOpen] = useState(false);
   const { showToast } = useToast();
 
-  const add = useCallback((product, attrs = {}, qty = 1) => {
-    const key = `${product.id}-${JSON.stringify(attrs)}`;
+  const add = useCallback((product, attrs = {}, qty = 1, selectedPackage = null) => {
+    const packageId = selectedPackage?.id || 'default';
+    const key = `${product.id}-${packageId}`;
     setItems((prev) => {
       const existing = prev.find((item) => item.key === key);
       if (existing) {
         return prev.map((item) => (item.key === key ? { ...item, qty: item.qty + qty } : item));
       }
-      return [...prev, { key, product, attrs, qty }];
+      return [...prev, { key, product, attrs, qty, selectedPackage }];
     });
     showToast(`${product.name} added to cart!`, 'success');
   }, [showToast]);
@@ -33,7 +34,10 @@ export function CartProvider({ children }) {
   const toggle = useCallback(() => setIsOpen((open) => !open), []);
   const close = useCallback(() => setIsOpen(false), []);
 
-  const getTotal = useCallback(() => items.reduce((sum, item) => sum + item.product.price * item.qty, 0), [items]);
+  const getTotal = useCallback(() => items.reduce((sum, item) => {
+    const price = item.selectedPackage?.final_price || item.product.price;
+    return sum + price * item.qty;
+  }, 0), [items]);
   const getCount = useCallback(() => items.reduce((sum, item) => sum + item.qty, 0), [items]);
 
   const value = useMemo(() => ({

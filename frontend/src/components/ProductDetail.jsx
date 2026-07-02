@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Minus, Play, Plus, RefreshCw, ShieldCheck, ShoppingCart, Star, Truck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -69,7 +69,20 @@ export default function ProductDetail({ product }) {
     );
   });
 
-  const discount = product.originalPrice ? Math.round((1 - product.price / product.originalPrice) * 100) : 0;
+  // Find the matching package based on selected attributes
+  const selectedPackage = useMemo(() => {
+    if (!Array.isArray(product.packages) || product.packages.length === 0) return null;
+
+    return product.packages.find((pkg) => {
+      if (selectedAttrs.Color && pkg.color !== selectedAttrs.Color) return false;
+      if (selectedAttrs.Size && pkg.size !== selectedAttrs.Size) return false;
+      return true;
+    }) || product.packages[0];
+  }, [product.packages, selectedAttrs]);
+
+  const discount = selectedPackage?.price && selectedPackage?.final_price
+    ? Math.round((1 - selectedPackage.final_price / selectedPackage.price) * 100)
+    : 0;
 
   const handleSelectAttr = (key, value) => {
     setSelectedAttrs((prev) => ({ ...prev, [key]: value }));
@@ -86,41 +99,65 @@ export default function ProductDetail({ product }) {
         <div className="flex items-center gap-3 mb-4">
           <div className="star-rating flex items-center gap-0.5">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className={`w-4 h-4 ${i < Math.floor(product.rating) ? 'fill-current' : ''}`} />
+              <Star key={i} className={`w-4 h-4 ${i < Math.floor(selectedPackage?.rating || product.rating) ? 'fill-current' : ''}`} />
             ))}
           </div>
-          <span className="text-sm text-gray-500">{product.rating} ({product.reviews} reviews)</span>
+          <span className="text-sm text-gray-500">{selectedPackage?.rating || product.rating} ({product.reviews} reviews)</span>
         </div>
         <div className="flex items-center gap-3 mb-6">
-          <span className="text-3xl font-bold text-primary-600">${product.price}</span>
-          {product.originalPrice && (
+          <span className="text-3xl font-bold text-primary-600">${selectedPackage?.final_price || product.price}</span>
+          {selectedPackage?.price && selectedPackage?.final_price < selectedPackage?.price && (
             <>
-              <span className="text-lg text-gray-400 line-through">${product.originalPrice}</span>
+              <span className="text-lg text-gray-400 line-through">${selectedPackage.price}</span>
               <span className="px-2 py-1 bg-red-50 text-red-500 text-sm font-semibold rounded-lg">-{discount}%</span>
             </>
           )}
         </div>
+        {selectedPackage && selectedPackage.quantity <= 0 && (
+          <div className="mb-4 text-red-500 font-semibold">Out of stock!</div>
+        )}
+        {selectedPackage && qty > selectedPackage.quantity && (
+          <div className="mb-4 text-orange-500 font-semibold">
+            Only {selectedPackage.quantity} items available!
+          </div>
+        )}
         <p className="text-gray-600 leading-relaxed mb-6">{product.description}</p>
         <ProductAttribute attributes={product.attributes} selected={selectedAttrs} onSelect={handleSelectAttr} />
         <div className="flex items-center gap-4 mt-8">
           <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
-            <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} className="qty-btn px-4 py-3 text-gray-600 transition">
+            <button 
+              type="button" 
+              onClick={() => setQty((q) => Math.max(1, q - 1))} 
+              className="qty-btn px-4 py-3 text-gray-600 transition disabled:opacity-50"
+              disabled={qty <= 1}
+            >
               <Minus className="w-4 h-4" />
             </button>
             <span className="px-4 py-3 font-semibold text-center min-w-[3rem]">{qty}</span>
-            <button type="button" onClick={() => setQty((q) => Math.min(99, q + 1))} className="qty-btn px-4 py-3 text-gray-600 transition">
+            <button 
+              type="button" 
+              onClick={() => setQty((q) => Math.min(selectedPackage?.quantity || 99, q + 1))} 
+              className="qty-btn px-4 py-3 text-gray-600 transition disabled:opacity-50"
+              disabled={selectedPackage && qty >= selectedPackage.quantity}
+            >
               <Plus className="w-4 h-4" />
             </button>
           </div>
           <button
             type="button"
-            onClick={() => add(product, selectedAttrs, qty)}
-            className="flex-1 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+            disabled={
+              !selectedPackage || 
+              !selectedPackage.is_active_package || 
+              selectedPackage.quantity <= 0 || 
+              qty > selectedPackage.quantity
+            }
+            onClick={() => add(product, selectedAttrs, qty, selectedPackage)}
+            className="flex-1 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ShoppingCart className="w-5 h-5" /> Add to Cart
           </button>
           <button type="button" className="w-12 h-12 border border-gray-200 rounded-xl flex items-center justify-center hover:bg-red-50 hover:border-red-200 transition group">
-            <Heart className="w-5 h-5 text-gray-400 group-hover:text-red-500 transition" />
+            <Heart className="w-5 h-5 text-gray-400 group-hover:text-red-50 transition" />
           </button>
         </div>
         <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100">

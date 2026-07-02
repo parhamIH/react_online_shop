@@ -1,1 +1,251 @@
-یک وب سایت برای معرفی محصول شامل این ها home page product list product ditail Artichels artichel dital Brandsbrand ditailAboutUsو  کامن کن برام هر کامپوننت اسمش چیه این کامپوننت ها ام میخواهم HomeBanner SlidersOfferSlidersBrandSliderCategorySliderCategoryBrandArtichelCartProductCartProductDitailCategoryCart ProductDitailGlleryVideoCartProductAttributeو چیز هایی بیشتر فقط مشخص کن برای کدام کاپوننت ها است با تم روشن 
+ابتدا بیایید فایل فعلی `seeds.py` را بررسی کنیم و همه مدل‌های موجود در پروژه را ببینیم:
+
+
+
+
+
+
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: c:\Users\prhm\Desktop\react js\react-shop\backend\seeds.py
+          
+
+        
+            
+toolName: file_search
+            
+status: success
+          
+file_pattern: backend/shop/*/models.py
+          
+خب حالا بیایید تمام مدل‌ها را بررسی کنیم تا بتوانیم لیست کاملی از اطلاعات مورد نیاز برای داده‌های واقعی به شما بدهیم:
+
+
+
+
+
+
+
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: c:\Users\prhm\Desktop\react js\react-shop\backend\shop\categories\models.py
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: c:\Users\prhm\Desktop\react js\react-shop\backend\shop\account\models.py
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: c:\Users\prhm\Desktop\react js\react-shop\backend\shop\order\models.py
+          
+
+        
+            
+toolName: view_files
+            
+status: success
+          
+            
+filePath: c:\Users\prhm\Desktop\react js\react-shop\backend\shop\sitesettings\models.py
+          
+عالی! حالا بیایید لیست کاملی از **اطلاعات مورد نیاز** برای داده‌های واقعی به شما بدهیم. لطفاً این اطلاعات را در یک پوشه مرتب شده آماده کنید:
+
+
+---
+
+## 📋 لیست کامل اطلاعات مورد نیاز
+
+### 1️⃣ **دسته‌بندی‌ها (BaseCategories & Category)**
+   - **BaseCategories**:
+     - نام فارسی
+     - نام انگلیسی
+     - توضیحات
+     - تصویر (فرمت: JPG/PNG, اندازه: 300x300)
+     - برندهای مرتبط با این دسته‌بندی اصلی
+   - **Category**:
+     - نام فارسی
+     - نام انگلیسی
+     - توضیحات
+     - تصویر (فرمت: JPG/PNG, اندازه: 300x300)
+     - دسته‌بندی والد (اگر زیرمجموعه است)
+     - دسته‌بندی اصلی مربوطه (BaseCategory)
+
+
+### 2️⃣ **برندها (Brand)**
+   - نام فارسی
+   - نام انگلیسی
+   - لوگو (فرمت: JPG/PNG, اندازه: 300x300)
+   - دسته‌بندی‌های مرتبط با برند
+
+
+### 3️⃣ **محصولات (Product & ProductPackage & Gallery)**
+   - **Product**:
+     - نام محصول
+     - توضیحات کامل
+     - تصویر اصلی (فرمت: JPG/PNG, اندازه: 800x800)
+     - دسته‌بندی‌های مرتبط
+     - ارائه‌دهنده (Provider)
+   - **ProductPackage** (برای هر محصول، یک یا چند بسته):
+     - برند
+     - گارانتی (نام، شرکت، مدت)
+     - رنگ
+     - سایز
+     - موجودی
+     - وزن (گرم)
+     - قیمت پایه
+     - درصد تخفیف (اگر فعال باشد)
+     - قیمت نهایی (محاسبه می‌شود)
+     - تعداد فروش
+     - تعداد بازدید
+     - امتیاز
+   - **Gallery** (گالری تصاویر برای هر محصول):
+     - تصاویر اضافی (فرمت: JPG/PNG, اندازه: 800x800)
+
+
+### 4️⃣ **ارائه‌دهندگان (Provider)**
+   - کاربر ارائه‌دهنده (User)
+   - نوع ارائه‌دهنده (فردی/شرکتی)
+   - نام شرکت
+   - ایمیل
+   - شماره تلفن
+   - آدرس
+   - شهر
+
+
+### 5️⃣ **گارانتی‌ها (Warranty)**
+   - نام گارانتی
+   - شرکت ارائه‌دهنده
+   - مدت (ماه)
+   - توضیحات
+   - شرایط و ضوابط
+   - شماره تماس پشتیبانی
+   - نیاز به ثبت گارانتی (بله/خیر)
+
+
+### 6️⃣ **رنگ‌ها (BaseColor & Color)**
+   - **BaseColor**:
+     - نام رنگ
+     - کد هگز
+   - **Color**:
+     - نام رنگ
+     - کد هگز
+     - تصویر رنگ (اگر وجود دارد)
+     - رنگ پایه مربوطه (BaseColor)
+
+
+### 7️⃣ **سایزها (Size)**
+   - سایز حروفی (XS/S/M/L/XL/XXL/...)
+   - سایز عددی (برای کفش: 38-46)
+   - سایز قابل نوشتاری
+   - دسته‌بندی (لباس/کفش/اکسسوری)
+
+
+### 8️⃣ **محتوای صفحه اصلی (HomeSlider & PromotionalBanner & FeaturedBrand)**
+   - **HomeSlider**:
+     - عنوان
+     - زیرعنوان
+     - تصویر (فرمت: JPG/PNG, اندازه: 1920x800)
+     - لینک (اگر وجود دارد)
+     - ترتیب نمایش
+   - **PromotionalBanner**:
+     - عنوان
+     - تصویر (فرمت: JPG/PNG)
+     - لینک
+     - موقعیت (بالا/وسط/پایین)
+     - اندازه (تمام عرض/نیم عرض/یک‌سوم عرض)
+     - ترتیب نمایش
+   - **FeaturedBrand**:
+     - برند
+     - ترتیب نمایش
+
+
+### 9️⃣ **تنظیمات سایت (SiteSettings)**
+   - نام سایت
+   - آدرس سایت
+   - لوگو (فرمت: JPG/PNG, اندازه: 300x100)
+   - فاویکون (فرمت: ICO/PNG, اندازه: 32x32)
+   - ایمیل
+   - شماره تلفن
+   - آدرس
+   - شبکه‌های اجتماعی (اینستاگرام، تلگرام، توییتر، لینکدین)
+   - متن فوتر
+   - متن درباره ما
+   - کلمات کلیدی سئو
+   - توضیحات سئو
+   - هزینه ارسال
+   - آستانه ارسال رایگان
+   - درصد مالیات
+
+
+### 🔟 **صفحات استاتیک (StaticPage)**
+   - عنوان صفحه
+   - اسلاگ
+   - محتوا
+   - فعال/غیرفعال
+   - عنوان سئو (اختیاری)
+   - کلمات کلیدی سئو (اختیاری)
+   - توضیحات سئو (اختیاری)
+
+
+---
+
+## 📁 ساختار پوشه پیشنهادی
+لطفاً داده‌ها را در این ساختار مرتب کنید:
+```
+data/
+├── images/
+│   ├── base_categories/
+│   ├── categories/
+│   ├── brands/
+│   ├── products/
+│   │   ├── main/
+│   │   └── gallery/
+│   ├── home_sliders/
+│   ├── promotional_banners/
+│   └── settings/
+├── categories.json
+├── brands.json
+├── products.json
+├── providers.json
+├── warranties.json
+├── colors.json
+├── sizes.json
+├── home_content.json
+├── site_settings.json
+└── static_pages.json
+```
+
+
+---
+
+## 📝 نکات مهم
+- تمام تصاویر باید در فرمت‌های JPG یا PNG باشند و اندازه‌های توصیه شده را رعایت کنند.
+- فایل‌های JSON برای ذخیره متاداده‌ها (نام‌ها، توضیحات و ...) مناسب هستند.
+- برای داده‌های متنی، از فارسی و انگلیسی مطابق مدل‌ها استفاده کنید.
+
+
+وقتی این داده‌ها را آماده کردید، فایل `seeds.py` جدید را برای شما تولید می‌کنیم! 🚀

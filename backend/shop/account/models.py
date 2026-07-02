@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.validators import MinLengthValidator, RegexValidator
+from django.core.validators import MinLengthValidator, RegexValidator, MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
 from shop.products.models import Product
 from django.db.models.signals import post_save
@@ -149,14 +149,52 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
+#__________________________________________ ------Coupon (General)------ _______________________________________
+class Coupon(models.Model):
+    code = models.CharField(max_length=50, unique=True, verbose_name="کد تخفیف")
+    discount_percent = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)], verbose_name="درصد تخفیف")
+    max_discount_amount = models.PositiveIntegerField(default=0, verbose_name="حداکثر مبلغ تخفیف (تومان)")
+    min_order_amount = models.PositiveIntegerField(default=0, verbose_name="حداقل مبلغ سفارش (تومان)")
+    usage_limit = models.PositiveIntegerField(default=1, verbose_name="حداکثر تعداد استفاده")
+    used_count = models.PositiveIntegerField(default=0, verbose_name="تعداد استفاده شده")
+    valid_from = models.DateTimeField(verbose_name="معتبر از تاریخ")
+    valid_until = models.DateTimeField(verbose_name="معتبر تا تاریخ")
+    is_active = models.BooleanField(default=True, verbose_name="فعال است")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="ایجاد شده در")
+
+    class Meta:
+        verbose_name = "کوپن تخفیف"
+        verbose_name_plural = "کوپن‌های تخفیف"
+
+    def __str__(self):
+        return f"{self.code} - {self.discount_percent}%"
+
+    def is_valid(self):
+        from django.utils import timezone
+        if not self.is_active:
+            return False
+        now = timezone.now()
+        if self.valid_from > now or self.valid_until < now:
+            return False
+        if self.used_count >= self.usage_limit:
+            return False
+        return True
+
+
 #__________________________________________ ------User-Coupons------ _______________________________________
 class UserCoupon(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='offer_coupons')
-    code = models.CharField(max_length=50)
-    discount = models.PositiveIntegerField(help_text="discount")
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expire_at = models.DateTimeField(null=True, blank=True)
+    coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE, related_name='user_coupons', null=True, blank=True, verbose_name="کوپن")
+    code = models.CharField(max_length=50, verbose_name="کد تخفیف")
+    discount = models.PositiveIntegerField(help_text="مبلغ تخفیف (تومان)", verbose_name="تخفیف")
+    is_active = models.BooleanField(default=True, verbose_name="فعال است")
+    used = models.BooleanField(default=False, verbose_name="استفاده شده")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="ایجاد شده در")
+    expire_at = models.DateTimeField(null=True, blank=True, verbose_name="انقضا در")
+
+    class Meta:
+        verbose_name = "کوپن کاربر"
+        verbose_name_plural = "کوپن‌های کاربر"
 
     def __str__(self):
         return f"{self.code}  --- ({self.user.username})"
