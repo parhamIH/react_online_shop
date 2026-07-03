@@ -112,6 +112,7 @@ class ProductPackageSerializer(serializers.ModelSerializer):
             "final_price",
             "discount",
             "is_active_discount",
+            "is_active_package",
             "quantity",
             "color",
             "size",
