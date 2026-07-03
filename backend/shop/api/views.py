@@ -242,6 +242,27 @@ class ProfileAPIView(generics.RetrieveUpdateAPIView):
         profile, _ = Profile.objects.get_or_create(user=self.request.user)
         return profile
 
+    def update(self, request, *args, **kwargs):
+        # Handle file upload for avatar
+        partial = kwargs.pop('partial', True)
+        instance = self.get_object()
+        
+        # Update user first name and last name
+        if 'first_name' in request.data:
+            request.user.first_name = request.data['first_name']
+        if 'last_name' in request.data:
+            request.user.last_name = request.data['last_name']
+        request.user.save()
+        
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+        
+        return Response(serializer.data)
+
 
 class AddressListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]

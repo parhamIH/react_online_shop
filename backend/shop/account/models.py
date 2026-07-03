@@ -110,17 +110,18 @@ class Notification(models.Model):
 #__________________________________________ ------Client-Profile------ _______________________________________
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, verbose_name="avatar")
     phone_number = models.CharField(max_length=15, unique=True, null=True, blank=True, verbose_name="phone_number")
     is_phone_verified = models.BooleanField(default=False, verbose_name="is_phone_verified")
     verification_code = models.CharField(max_length=6, null=True, blank=True, verbose_name="verification_code")
     verification_code_created_at = models.DateTimeField(null=True, blank=True, verbose_name="verification_code_created_at")
     national_id = models.CharField(
-        max_length=10, 
-        null=True, 
-        blank=True, 
+        max_length=10,
+        null=True,
+        blank=True,
         validators=[
             RegexValidator(
-                regex=r'^\d{10}$', 
+                regex=r'^\d{10}$',
                 message='کد ملی باید دقیقاً 10 رقم باشد'
             ),
             validate_national_id

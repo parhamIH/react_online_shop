@@ -333,18 +333,67 @@ class CartSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
     email = serializers.EmailField(source="user.email", read_only=True)
+    first_name = serializers.CharField(source="user.first_name", required=False, allow_blank=True)
+    last_name = serializers.CharField(source="user.last_name", required=False, allow_blank=True)
+    date_joined = serializers.DateTimeField(source="user.date_joined", read_only=True)
+    avatar = serializers.SerializerMethodField()
+    stats = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
         fields = [
             "username",
             "email",
+            "first_name",
+            "last_name",
             "phone_number",
             "national_id",
             "birth_date",
             "job",
             "is_phone_verified",
+            "date_joined",
+            "avatar",
+            "stats",
         ]
+
+    def get_avatar(self, obj):
+        return absolute_media_url(self.context.get("request"), obj.avatar)
+
+    def get_stats(self, obj):
+        from shop.order.models import Order
+        from shop.account.models import ClientAddress, FavouriteProducts
+        from shop.support.models import SupportTicket
+        
+        total_orders = Order.objects.filter(user=obj.user).count()
+        active_orders = Order.objects.filter(user=obj.user, status__in=['در حال انتظار', 'در حال پردازش', 'ارسال شده']).count()
+        saved_addresses = ClientAddress.objects.filter(user=obj.user).count()
+        try:
+            fav = FavouriteProducts.objects.get(user=obj.user)
+            favorite_products = fav.products.count()
+        except FavouriteProducts.DoesNotExist:
+            favorite_products = 0
+        support_tickets = SupportTicket.objects.filter(user=obj.user).count()
+        
+        return {
+            "total_orders": total_orders,
+            "active_orders": active_orders,
+            "saved_addresses": saved_addresses,
+            "favorite_products": favorite_products,
+            "support_tickets": support_tickets,
+        }
+
+    def update(self, instance, validated_data):
+        # Update user fields
+        user_data = validated_data.pop('user', {})
+        user = instance.user
+        if 'first_name' in user_data:
+            user.first_name = user_data['first_name']
+        if 'last_name' in user_data:
+            user.last_name = user_data['last_name']
+        user.save()
+        
+        # Update profile fields
+        return super().update(instance, validated_data)
 
 
 class ClientAddressSerializer(serializers.ModelSerializer):

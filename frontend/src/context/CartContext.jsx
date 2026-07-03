@@ -1,33 +1,83 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, useEffect } from 'react';
 import { useToast } from './ToastContext';
+import { shopApi } from '../api/shop';
 
 const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { showToast } = useToast();
 
-  const add = useCallback((product, attrs = {}, qty = 1, selectedPackage = null) => {
-    const packageId = selectedPackage?.id || 'default';
-    const key = `${product.id}-${packageId}`;
-    setItems((prev) => {
-      const existing = prev.find((item) => item.key === key);
-      if (existing) {
-        return prev.map((item) => (item.key === key ? { ...item, qty: item.qty + qty } : item));
+  // بارگذاری سبد خرید از سرور در mount
+  const loadCart = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const data = await shopApi.getCart();
+      if (data?.items) {
+        setItems(data.items.map(item => ({
+          id: item.id,
+          key: `${item.product.id}-${item.id}`,
+          product: item.product,
+          qty: item.count,
+          price: item.price,
+          total: item.total
+        })));
       }
-      return [...prev, { key, product, attrs, qty, selectedPackage }];
-    });
-    showToast(`${product.name} added to cart!`, 'success');
-  }, [showToast]);
-
-  const remove = useCallback((key) => {
-    setItems((prev) => prev.filter((item) => item.key !== key));
+    } catch (err) {
+      console.error('Failed to load cart:', err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const updateQty = useCallback((key, qty) => {
-    setItems((prev) => prev.map((item) => (item.key === key ? { ...item, qty: Math.max(1, qty) } : item)));
-  }, []);
+  useEffect(() => {
+    loadCart();
+  }, [loadCart]);
+
+  const add = useCallback(async (product, attrs = {}, qty = 1, selectedPackage = null) => {
+    try {
+      const packageId = selectedPackage?.id;
+      if (!packageId) {
+        showToast('لطفاً یک تنوع محصول انتخاب کنید', 'error');
+        return;
+      }
+
+      await shopApi.addToCart(packageId, qty);
+      await loadCart(); // بارگذاری مجدد سبد خرید
+      showToast(`${product.name} با موفقیت به سبد خرید اضافه شد!`, 'success');
+      toggle(); // باز کردن سبد خرید پس از افزودن
+    } catch (err) {
+      console.error('Failed to add to cart:', err);
+      showToast(err.message || 'خطا در افزودن به سبد خرید', 'error');
+    }
+  }, [showToast, loadCart]);
+
+  const remove = useCallback(async (key, itemId) => {
+    try {
+      await shopApi.removeFromCart(itemId);
+      await loadCart();
+      showToast('محصول با موفقیت از سبد خرید حذف شد', 'success');
+    } catch (err) {
+      console.error('Failed to remove from cart:', err);
+      showToast(err.message || 'خطا در حذف از سبد خرید', 'error');
+    }
+  }, [showToast, loadCart]);
+
+  const updateQty = useCallback(async (key, qty, itemId) => {
+    try {
+      if (qty <= 0) {
+        await remove(key, itemId);
+        return;
+      }
+      await shopApi.updateCartItem(itemId, qty);
+      await loadCart();
+    } catch (err) {
+      console.error('Failed to update cart:', err);
+      showToast(err.message || 'خطا در به‌روزرسانی سبد خرید', 'error');
+    }
+  }, [showToast, loadCart, remove]);
 
   const clear = useCallback(() => setItems([]), []);
 
@@ -35,14 +85,15 @@ export function CartProvider({ children }) {
   const close = useCallback(() => setIsOpen(false), []);
 
   const getTotal = useCallback(() => items.reduce((sum, item) => {
-    const price = item.selectedPackage?.final_price || item.product.price;
-    return sum + price * item.qty;
+    return sum + (item.total || 0);
   }, 0), [items]);
-  const getCount = useCallback(() => items.reduce((sum, item) => sum + item.qty, 0), [items]);
+  
+  const getCount = useCallback(() => items.reduce((sum, item) => sum + (item.qty || 0), 0), [items]);
 
   const value = useMemo(() => ({
     items,
     isOpen,
+    isLoading,
     add,
     remove,
     updateQty,
@@ -51,7 +102,8 @@ export function CartProvider({ children }) {
     close,
     getTotal,
     getCount,
-  }), [items, isOpen, add, remove, updateQty, clear, toggle, close, getTotal, getCount]);
+    loadCart,
+  }), [items, isOpen, isLoading, add, remove, updateQty, clear, toggle, close, getTotal, getCount, loadCart]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

@@ -80,6 +80,7 @@ export const shopApi = {
       method: 'PATCH',
       auth: true,
       body: data,
+      isFormData: data instanceof FormData,
     });
   },
 
@@ -160,5 +161,28 @@ export const shopApi = {
 
   async getCart() {
     return apiRequest('/cart/', { auth: true });
+  },
+
+  async addToCart(packageId, count = 1) {
+    return apiRequest('/cart/items/', {
+      method: 'POST',
+      auth: true,
+      body: { package_id: packageId, count: count },
+    });
+  },
+
+  async updateCartItem(itemId, count) {
+    return apiRequest(`/cart/items/${itemId}/`, {
+      method: 'PATCH',
+      auth: true,
+      body: { count: count },
+    });
+  },
+
+  async removeFromCart(itemId) {
+    return apiRequest(`/cart/items/${itemId}/remove/`, {
+      method: 'DELETE',
+      auth: true,
+    });
   },
 };
