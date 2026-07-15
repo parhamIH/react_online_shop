@@ -5,7 +5,7 @@ import CartSidebar from './CartSidebar';
 import Footer from './Footer';
 import Header, { MobileMenu } from './Header';
 
-export default function MainLayout() {
+export default function MainLayout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -17,7 +17,7 @@ export default function MainLayout() {
       <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
       <Header onMenuToggle={() => setMobileMenuOpen((open) => !open)} />
       <main key={location.pathname} className="min-h-screen animate-fade-in">
-        <Outlet />
+        {children ?? <Outlet />}
       </main>
       <Footer />
     </>

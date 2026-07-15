@@ -1,4 +1,4 @@
-import { Route, Routes, Link, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import MainLayout from './components/layout/MainLayout';
 import AboutPage from './pages/AboutPage';
@@ -155,6 +155,8 @@ export default function App() {
         <Route path="register" element={<RegisterPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
+      <Route path="/panel" element={<Navigate to="/profile" replace />} />
+      <Route path="/panel/*" element={<ProtectedRoute><ProfileLayout /></ProtectedRoute>} />
       <Route path="/profile/*" element={<ProtectedRoute><ProfileLayout /></ProtectedRoute>} />
     </Routes>
   );
