@@ -24,6 +24,7 @@ import RegisterPage from './pages/RegisterPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './context/AuthContext';
 import EditProfilePage from './pages/EditProfilePage';
+import CheckoutPage from './pages/CheckoutPage';
 
 function ProfileLayout() {
   const location = useLocation();
@@ -153,6 +154,7 @@ export default function App() {
         <Route path="about" element={<AboutPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
+        <Route path="checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
       <Route path="/panel" element={<Navigate to="/profile" replace />} />

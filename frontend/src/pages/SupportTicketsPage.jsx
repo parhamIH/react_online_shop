@@ -179,7 +179,7 @@ export default function SupportTicketsPage() {
       ) : (
         <div className="space-y-6">
             {(Array.isArray(tickets) ? tickets : []).map((ticket) => (
-              <Link key={ticket?.id || Math.random()} to={`/support-tickets/${ticket?.id || ''}`} className="block">
+              <Link key={ticket?.id || Math.random()} to={`/profile/support-tickets/${ticket?.id || ''}`} className="block">
                 <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl transition-all duration-300">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">

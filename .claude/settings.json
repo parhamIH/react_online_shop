@@ -1,0 +1,17 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://integrate.api.nvidia.com/v1",
+    "ANTHROPIC_API_KEY": "",
+    "ANTHROPIC_AUTH_TOKEN": "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",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "z-ai/glm-5.2",
+    "Types": "z-ai/glm-5.2",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "z-ai/glm-5.2",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+
+  },
+  "permissions": {
+    "allow": [],
+    "deny": []
+  },
+  "theme": "auto"
+}

@@ -29,7 +29,7 @@ export default function SupportTicketDetailPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <Link to="/support-tickets" className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-6">
+      <Link to="/profile/support-tickets" className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-6">
         <ArrowLeft className="w-4 h-4" />
         بازگشت
       </Link>

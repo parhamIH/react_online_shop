@@ -1,8 +1,10 @@
 import { ShoppingBag, Trash2, X } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function CartSidebar() {
   const { items, isOpen, toggle, close, remove, updateQty, clear, getTotal } = useCart();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -43,22 +45,22 @@ export default function CartSidebar() {
                       <div className="flex items-center gap-2">
                         <button 
                           type="button" 
-                          onClick={() => updateQty(item.key, item.qty - 1)} 
+                          onClick={() => updateQty(item.key, item.qty - 1, item.id)} 
                           className="qty-btn w-7 h-7 rounded-lg border flex items-center justify-center text-sm disabled:opacity-50"
                           disabled={item.qty <= 1}
                         >−</button>
                         <span className="text-sm font-medium w-6 text-center">{item.qty}</span>
                         <button 
                           type="button" 
-                          onClick={() => updateQty(item.key, item.qty + 1)} 
+                          onClick={() => updateQty(item.key, item.qty + 1, item.id)} 
                           className="qty-btn w-7 h-7 rounded-lg border flex items-center justify-center text-sm disabled:opacity-50"
                           disabled={item.qty >= maxQty}
                         >+</button>
                       </div>
-                      <span className="font-semibold text-primary-600">${((item.selectedPackage?.final_price || item?.product?.price) * item.qty || 0).toFixed(2)}</span>
+                      <span className="font-semibold text-primary-600">{(item.total || 0).toLocaleString('fa-IR')} تومان</span>
                     </div>
                   </div>
-                  <button type="button" onClick={() => remove(item.key)} className="text-gray-400 hover:text-red-500 transition p-1">
+                  <button type="button" onClick={() => remove(item.key, item.id)} className="text-gray-400 hover:text-red-500 transition p-1">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -71,10 +73,10 @@ export default function CartSidebar() {
           <div className="border-t p-6">
             <div className="flex justify-between items-center mb-4">
               <span className="text-gray-600">Total</span>
-              <span className="text-2xl font-bold text-primary-600">${getTotal().toFixed(2)}</span>
+              <span className="text-2xl font-bold text-primary-600">{getTotal().toLocaleString('fa-IR')} تومان</span>
             </div>
-            <button type="button" className="w-full py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition">Checkout</button>
-            <button type="button" onClick={clear} className="w-full py-2 mt-2 text-gray-500 text-sm hover:text-red-500 transition">Clear Cart</button>
+            <button type="button" onClick={() => { close(); navigate('/checkout'); }} className="w-full py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition">تکمیل خرید</button>
+            <button type="button" onClick={clear} className="w-full py-2 mt-2 text-gray-500 text-sm hover:text-red-500 transition">خالی کردن سبد</button>
           </div>
         )}
       </aside>

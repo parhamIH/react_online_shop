@@ -185,4 +185,22 @@ export const shopApi = {
       auth: true,
     });
   },
+
+  async applyCoupon(code) {
+    const response = await apiRequest('/coupons/apply/', {
+      method: 'POST',
+      auth: true,
+      body: { code },
+    });
+    // Add code to response so frontend can track it
+    return { ...response, code };
+  },
+
+  async checkout(data) {
+    return apiRequest('/checkout/', {
+      method: 'POST',
+      auth: true,
+      body: data,
+    });
+  },
 };

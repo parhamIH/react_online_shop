@@ -613,8 +613,8 @@ class ZarinPalPaymentVerifyView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        import requests
         from django.conf import settings
+        from shop.order.zarinpal import ZarinPal
         from shop.order.models import Order
 
         authority = request.GET.get('Authority')
@@ -623,42 +623,35 @@ class ZarinPalPaymentVerifyView(APIView):
         if status != 'OK':
             return Response({'detail': 'پرداخت ناموفق بود'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # TODO: پیدا کردن cart از authority (در این مثال یک cart به صورت hardcode انتخاب می‌کنیم)
-        # در محیط واقعی، باید authority را در دیتابیس ذخیره کرده و از آن پیدا کنید
-        cart = Cart.objects.filter(is_paid=False).first()
-        if not cart:
-            return Response({'detail': 'سبد خرید یافت نشد'}, status=status.HTTP_404_NOT_FOUND)
-
-        MERCHANT_ID = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-        amount = int(cart.total_price() * 10)  # تبدیل تومان به ریال
-        ZARINPAL_VERIFY_URL = "https://api.zarinpal.com/pg/v4/payment/verify.json"
-
-        payload = {
-            "merchant_id": MERCHANT_ID,
-            "amount": amount,
-            "authority": authority
-        }
-
+        # Find the order by payment_id (authority)
         try:
-            response = requests.post(ZARINPAL_VERIFY_URL, json=payload, timeout=10)
-            result = response.json()
+            order = Order.objects.get(payment_id=authority)
+        except Order.DoesNotExist:
+            return Response({'detail': 'سفارش یافت نشد'}, status=status.HTTP_404_NOT_FOUND)
 
-            if result['data']['code'] == 100 or result['data']['code'] == 101:
-                # پرداخت موفقیت‌آمیز
-                cart.is_paid = True
-                cart.save()
+        # Verify payment
+        merchant_id = settings.ZARINPAL_SETTINGS.get('MERCHANT_ID', 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX')
+        sandbox = settings.ZARINPAL_SETTINGS.get('SANDBOX', True)
+        callback_url = request.build_absolute_uri('/api/payment/verify/')
+        
+        zarinpal = ZarinPal(merchant_id, callback_url, sandbox=sandbox)
+        result = zarinpal.payment_verification(authority, order.total_price)
 
-                # ایجاد سفارش (Order)
-                # در این مثال، از signal قبلی استفاده می‌کنیم یا به صورت دستی ایجاد می‌کنیم
-                return Response({
-                    'detail': 'پرداخت موفقیت‌آمیز بود',
-                    'ref_id': result['data']['ref_id'],
-                    'cart_id': cart.id
-                }, status=status.HTTP_200_OK)
-            else:
-                return Response({'detail': 'خطا در تایید پرداخت'}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'detail': f'خطا در تایید پرداخت: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        if result['success']:
+            # Update order and cart
+            order.payment_status = 'پرداخت شده'
+            order.payment_reference_id = result['ref_id']
+            order.status = 'در حال پردازش'
+            order.save()
+            
+            order.cart.is_paid = True
+            order.cart.save()
+
+            # Redirect to orders page in frontend
+            from django.shortcuts import redirect
+            return redirect('/profile/orders')
+        else:
+            return Response({'detail': result['error']}, status=status.HTTP_400_BAD_REQUEST)
 
 
 #__________________________________________ ------Checkout------ _______________________________________
@@ -714,7 +707,6 @@ class CheckoutView(APIView):
             user=request.user,
             cart=cart,
             address=address,
-            order_number=str(order.id),
             payment_method='online',
             payment_status='در انتظار پرداخت',
             status='در حال انتظار',
@@ -725,11 +717,36 @@ class CheckoutView(APIView):
             discount_amount=discount_amount
         )
 
-        # TODO: در این مرحله باید کاربر را به درگاه پرداخت هدایت کنید
-        return Response({
-            'order_id': order.id,
-            'order_number': order.order_number,
-            'total_price': total_price,
-            'shipping_cost': shipping_cost,
-            'discount_amount': discount_amount
-        }, status=status.HTTP_201_CREATED)
+        # Get payment URL from ZarinPal
+        try:
+            from django.conf import settings
+            from shop.order.zarinpal import ZarinPal
+            import requests
+
+            merchant_id = settings.ZARINPAL_SETTINGS.get('MERCHANT_ID', 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX')
+            sandbox = settings.ZARINPAL_SETTINGS.get('SANDBOX', True)
+            callback_url = request.build_absolute_uri('/api/payment/verify/')
+            amount = total_price  # in Toman
+            description = f"پرداخت سفارش {order.order_number}"
+            email = request.user.email if hasattr(request.user, 'email') and request.user.email else None
+            mobile = request.user.profile.phone_number if hasattr(request.user, 'profile') and request.user.profile.phone_number else None
+
+            zarinpal = ZarinPal(merchant_id, callback_url, sandbox=sandbox)
+            result = zarinpal.payment_request(amount, description, email, mobile)
+            
+            if result['success']:
+                order.payment_id = result['authority']
+                order.save()
+                
+                return Response({
+                    'order_id': order.id,
+                    'order_number': order.order_number,
+                    'total_price': total_price,
+                    'shipping_cost': shipping_cost,
+                    'discount_amount': discount_amount,
+                    'payment_url': result['url']
+                }, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'detail': result['error']}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'detail': f'خطا در درخواست پرداخت: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export function useAsyncData(loader, deps = [], defaultValue = null) {
   const [data, setData] = useState(defaultValue);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const run = useCallback(() => {
     let cancelled = false;
 
     setLoading(true);
@@ -32,7 +32,17 @@ export function useAsyncData(loader, deps = [], defaultValue = null) {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
-  return { data, loading, error };
+  useEffect(() => {
+    const cancel = run();
+    return cancel;
+  }, [run]);
+
+  const refetch = useCallback(() => {
+    run();
+  }, [run]);
+
+  return { data, loading, error, refetch };
 }

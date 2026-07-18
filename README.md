@@ -13,6 +13,13 @@ React Shop is a full-stack e-commerce project with:
 - **Backend:** Django 6 + Django REST Framework (JSON API)
 - **Frontend:** React 19 + Vite + Tailwind CSS
 - **Infrastructure:** Docker Compose, Nginx reverse proxy, PostgreSQL
+- **Payment:** ZarinPal payment gateway integration
+- **Features:**
+  - Multi-step checkout (address, shipping, payment)
+  - Coupon code application
+  - User profile with orders and addresses
+  - Support tickets system
+  - Cart management
 
 Frontend and backend communicate via **HTTP Content Negotiation** (`Accept: application/json`, `Content-Type: application/json`).
 
@@ -163,6 +170,13 @@ React Shop یک پروژه فروشگاهی فول‌استک است شامل:
 - **بک‌اند:** Django 6 + Django REST Framework (API با فرمت JSON)
 - **فرانت‌اند:** React 19 + Vite + Tailwind CSS
 - **زیرساخت:** Docker Compose، Nginx، PostgreSQL
+- **پرداخت:** یکپارچه‌سازی درگاه پرداخت زرین‌پال
+- **ویژگی‌ها:**
+  - چک‌آوت چند مرحله‌ای (آدرس، ارسال، پرداخت)
+  - اعمال کد تخفیف
+  - پروفایل کاربر با سفارشات و آدرس‌ها
+  - سیستم تیکت پشتیبانی
+  - مدیریت سبد خرید
 
 ارتباط فرانت‌اند و بک‌اند با **Content Negotiation** انجام می‌شود (`Accept: application/json`).
 
